@@ -33,19 +33,58 @@
 
 #include <stdint.h>
 #include <pru_cfg.h>
+#include <string.h>
 
-#include "resource_table_0.h"
+#include "ResourceTable.h"
 
-static char hex(uint8_t value)
+class Trace
 {
-  if (value > 0xf) {
-    return '?';
-  }
-  if (value >= 0xa) {
-    return value - 0xa + 'a';
-  }
-  return value + '0';
-}
+public:
+	Trace(volatile char *_address, size_t _size) :
+		address(_address),
+		size(_size),
+		index(0)
+	{
+	}
+
+	void hex(uint8_t value)
+	{
+		puts(hexNibble(value >> 4));
+		puts(hexNibble(value & 0xf));
+	}
+
+	void log(char* value)
+	{
+		for (char *itr = value; *itr != '\0'; itr++) {
+			puts(*itr);
+		}
+	}
+
+private:
+	volatile char * const address;
+	const size_t size;
+	size_t index;
+
+	void puts(char value)
+	{
+		address[index] = value;
+		index++;
+		if (index >= size) {
+			index = 0;
+		}
+	}
+
+	char hexNibble(uint8_t value) const
+	{
+	  if (value > 0xf) {
+	    return '?';
+	  }
+	  if (value >= 0xa) {
+	    return value - 0xa + 'a';
+	  }
+	  return value + '0';
+	}
+};
 
 static void sleepMs(uint32_t value)
 {
@@ -57,28 +96,14 @@ static void sleepMs(uint32_t value)
 
 int main(void)
 {
-	const uint32_t traceOffset = am335x_pru_remoteproc_ResourceTable.trace.da - am335x_pru_remoteproc_ResourceTable.memory.da;
-	const uint32_t traceAddr = am335x_pru_remoteproc_ResourceTable.memory.pa + traceOffset;
-
-	volatile char *trace = (char*)traceAddr;
-	const uint32_t traceSize = am335x_pru_remoteproc_ResourceTable.trace.len;
+	Trace trace(traceAddress(), traceSize());
 
 	uint8_t num = 0;
-	uint32_t ti = 0;
 
 	while(1){
-		char buffer[20] = "hello nr. ";
-		int end = strlen(buffer);
-		buffer[end] = hex(num >> 4);
-		buffer[end+1] = hex(num & 0xf);
-		buffer[end+2] = '\n';
-		int len = end+3;
-
-		int i;
-		for (i = 0; i < len; i++) {
-			trace[ti] = buffer[i];
-			ti = (ti + 1) % traceSize;
-		}
+		trace.log("hello nr. ");
+		trace.hex(num);
+		trace.log("\n");
 
 		num++;
 
