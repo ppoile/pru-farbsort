@@ -18,3 +18,8 @@ src/DirectMemory.cpp
 src/DirectMemory.h
 src/Trace.cpp
 src/Trace.h
+src/PruLed.cpp
+src/PruLed.h
+src/lightsequence/Up.cpp
+src/lightsequence/Up.h
+src/Led.h

@@ -1,6 +1,6 @@
 LINKER_COMMAND_FILE=./AM335x_PRU.cmd
 LIBS=--library=$(PRU_LIB)/lib/rpmsg_lib.lib
-INCLUDE=--include_path=$(PRU_LIB)/include/ --include_path=$(PRU_LIB)/include/am335x/
+INCLUDE=--include_path=$(PRU_LIB)/include/ --include_path=$(PRU_LIB)/include/am335x/ --include_path=.
 STACK_SIZE=0x100
 HEAP_SIZE=0x100
 
@@ -11,7 +11,7 @@ LFLAGS=--reread_libs --warn_sections --stack_size=$(STACK_SIZE) --heap_size=$(HE
 
 TARGET=firmware
 MAPFILE=$(TARGET).map
-OBJECTS=main.o ResourceTable.o TiAdc.o DirectMemory.o AdcMeasurement.o Trace.o
+OBJECTS=main.o ResourceTable.o TiAdc.o DirectMemory.o AdcMeasurement.o Trace.o PruLed.o lightsequence/Up.o
 
 all: $(TARGET)
 

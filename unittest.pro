@@ -19,7 +19,10 @@ SOURCES += \
     src/Adc.Dummy.cpp \
     src/TiAdc.Test.cpp \
     src/Trace.Test.cpp \
-    src/Trace.cpp
+    src/Trace.cpp \
+    src/lightsequence/Up.cpp \
+    src/lightsequence/Up.Test.cpp \
+    src/Led.Dummy.cpp
 
 HEADERS += \
     src/Adc.h \
@@ -31,4 +34,7 @@ HEADERS += \
     src/Adc.Mock.h \
     src/Adc.Dummy.h \
     src/precpp11.h \
-    src/Trace.h
+    src/Trace.h \
+    src/lightsequence/Up.h \
+    src/Led.Dummy.h \
+    src/Led.h
