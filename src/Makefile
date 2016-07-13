@@ -10,13 +10,14 @@ CFLAGS=-v3 -O2 --display_error_number --endian=little --hardware_mac=on -ppd -pp
 LFLAGS=--reread_libs --warn_sections --stack_size=$(STACK_SIZE) --heap_size=$(HEAP_SIZE)
 
 TARGET=firmware
+MAPFILE=$(TARGET).map
 OBJECTS=main.o ResourceTable.o TiAdc.o DirectMemory.o AdcMeasurement.o Trace.o
 
 all: $(TARGET)
 
 # Invokes the linker (-z flag) to make the firmware
 $(TARGET): $(OBJECTS) $(LINKER_COMMAND_FILE)
-	$(PRU_CGT)/bin/clpru $(CFLAGS) -z -i$(PRU_CGT)/lib -i$(PRU_CGT)/include $(LFLAGS) -o $(TARGET) $(OBJECTS) $(LINKER_COMMAND_FILE) --library=libc.a $(LIBS)
+	$(PRU_CGT)/bin/clpru $(CFLAGS) -z -i$(PRU_CGT)/lib -i$(PRU_CGT)/include $(LFLAGS) -o $(TARGET) -m $(MAPFILE) $(OBJECTS) $(LINKER_COMMAND_FILE) --library=libc.a $(LIBS)
 
 # Invokes the compiler on all c files in the directory to create the object files
 %.o: %.cpp
@@ -28,7 +29,7 @@ $(TARGET): $(OBJECTS) $(LINKER_COMMAND_FILE)
 .PHONY: all clean
 
 clean:
-	rm -rf $(TARGET) *.o *.pp
+	rm -rf $(TARGET) $(MAPFILE) *.o *.pp
 
 # Includes the dependencies that the compiler creates (-ppd and -ppa flags)
 -include $(OBJECTS:%.o=%.pp)
