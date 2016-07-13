@@ -41,19 +41,29 @@ volatile register uint32_t __R30;
 /*
  * main.c
  */
-int main(void) {
-	volatile uint32_t gpo;
+int main(void)
+{
 
 	/* GPI Mode 0, GPO Mode 0 */
 	CT_CFG.GPCFG0 = 0;
 
-	/* Clear GPO pins */
-	gpo = 0x0000;
-	
+	int state = 0;
+
 	while(1){
-		gpo = __R30;
-		gpo ^= 1<<14;
-		__R30 = gpo;
-		__delay_cycles(100000000); // half-second delay
+		uint32_t onLedNr;
+		if (state < 4) {
+			onLedNr = state;
+		} else {
+			onLedNr = 6-state;
+		}
+
+		if (state < 5) {
+			state++;
+		} else {
+			state = 0;
+		}
+
+		__R30 = 1 << onLedNr;
+		__delay_cycles(20*1000*1000); // 100 ms
 	}
 }
