@@ -17,10 +17,12 @@ public:
     void poll();
 
 private:
-    int id;
-    bool bOldIsInterrupted;
-    RpMsgTxInterface *rpmsg;
+    bool _isValidId() const;
+    uint8_t _getMsgFromIdAndInterrupted(bool isInterrupted);
 
+    const int id;
+    bool oldIsInterrupted;
+    RpMsgTxInterface *rpmsg;
 };
 
 #endif // LIGHTBARRIER_H

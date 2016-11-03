@@ -22,11 +22,23 @@ void LightBarrier::poll()
     {
         bOldIsInterrupted = newIsInterrupted;
 
-        if((id > 0) && (id < 3)) // message only for lb1 & lb2
-        {
-            uint8_t interrupted = (newIsInterrupted == true) ? 1 : 0;
-            uint8_t msg = INFO_LIGHT_BARRIER_1_BRIGHT + 2 * (id - 1) + interrupted;
-            rpmsg->post_info(msg);
-        }
+	if (_isValidId())
+	{
+	    uint8_t msg = _getMsgFromIdAndInterrupted(newIsInterrupted);
+	    rpmsg->post_info(msg);
+	}
     }
+}
+
+bool LightBarrier::_isValidId() const
+{
+  return (id > 0) && (id < 3);
+}
+
+uint8_t LightBarrier::_getMsgFromIdAndInterrupted(bool isInterrupted)
+{
+  uint8_t msg = INFO_LIGHT_BARRIER_1_BRIGHT; // base msg id
+  msg += 2 * (id - 1); // consider light-barrier id...
+  msg += isInterrupted ? 1 : 0; // ...and value
+  return msg;
 }
