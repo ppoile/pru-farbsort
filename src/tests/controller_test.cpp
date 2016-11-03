@@ -124,6 +124,11 @@ TEST(ControllerTest, Construction_shallRegisterForIncommingMessages)
 
 TEST_F(ControllerTest2, Diagnostic_shallInitHwAndAllowHWControll)
 {
+    EXPECT_CALL(motor, stop());
+    EXPECT_CALL(p1, pull());
+    EXPECT_CALL(p2, pull());
+    EXPECT_CALL(p3, pull());
+
     ctrl.start();
 
     // hw initialized
@@ -163,6 +168,11 @@ TEST_F(ControllerTest2, Diagnostic_shallInitHwAndAllowHWControll)
 
 TEST_F(ControllerTest2, StateNormalStartAndStop_shallStartAndStopMotorAndColorDetection)
 {
+    EXPECT_CALL(motor, stop());
+    EXPECT_CALL(p1, pull());
+    EXPECT_CALL(p2, pull());
+    EXPECT_CALL(p3, pull());
+
     ctrl.start();
 
     // motor for conveyor belt shall be started
@@ -182,6 +192,11 @@ TEST_F(ControllerTest2, StateNormalStartAndStop_shallStartAndStopMotorAndColorDe
 
 TEST_F(ControllerTest2, EmergencyStop_shallInitHw)
 {
+    EXPECT_CALL(motor, stop());
+    EXPECT_CALL(p1, pull());
+    EXPECT_CALL(p2, pull());
+    EXPECT_CALL(p3, pull());
+
     ctrl.start();
 
     EXPECT_CALL(lbEmergencyStop, isInterrupted()).Times(0);
