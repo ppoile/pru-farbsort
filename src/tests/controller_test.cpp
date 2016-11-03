@@ -177,7 +177,7 @@ TEST_F(ControllerTest2, StateNormalStartAndStop_shallStartAndStopMotorAndColorDe
 
 TEST_F(ControllerTest2, EmergencyStop_shallInitHw)
 {
-    EXPECT_CALL(lbEmergencyStop, isInterrupted()).Times(0).WillOnce(Return(true));
+    EXPECT_CALL(lbEmergencyStop, isInterrupted()).Times(0);
 
     // hw shall be inited
     EXPECT_CALL(motor, stop()).Times(0);
