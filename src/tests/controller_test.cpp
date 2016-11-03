@@ -78,14 +78,14 @@ protected:
           ctrl(hw, &rpmsgtx, stateDiagnostic, stateStopped, stateStarted)
     {};
 
-    MockMotor motor;
-    MockPiston p1;
-    MockPiston p2;
-    MockPiston p3;
-    MockLightBarrier lb1;
-    MockLightBarrier lb2;
-    MockLightBarrier lbEmergencyStop;
-    MockTimer timer;
+    StrictMock<MockMotor> motor;
+    StrictMock<MockPiston> p1;
+    StrictMock<MockPiston> p2;
+    StrictMock<MockPiston> p3;
+    StrictMock<MockLightBarrier> lb1;
+    StrictMock<MockLightBarrier> lb2;
+    StrictMock<MockLightBarrier> lbEmergencyStop;
+    StrictMock<MockTimer> timer;
     NiceMock<MockRpMsgTx> rpmsgtx;  // use nice mock becaust ctrl-ctor calls it
     Queue<Color,COLOR_QUEUE_SIZE> queue;
     ObjectPool<BrickEjectCommand, 5> ejectCommandPool;
@@ -107,8 +107,8 @@ TEST(ControllerTest, Construction_shallRegisterForIncommingMessages)
     NiceMock<MockPiston> p3;
 
 	Hw hw{&motor, &p1, &p2, &p3, 0, 0, 0, 0};
-    MockRpMsgTx rpmsgtx;
-    MockTimer timer;
+    StrictMock<MockRpMsgTx> rpmsgtx;
+    StrictMock<MockTimer> timer;
     Queue<Color,COLOR_QUEUE_SIZE> queue;
     ObjectPool<BrickEjectCommand, 5> ejectCommandPool;
     ControllerStateNormalStarted stateStarted{hw, &timer, &rpmsgtx, queue, ejectCommandPool};
