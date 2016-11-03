@@ -114,14 +114,11 @@ TEST(ControllerTest, Construction_shallRegisterForIncommingMessages)
     ControllerStateNormalStarted stateStarted{hw, &timer, &rpmsgtx, queue, ejectCommandPool};
     ControllerStateNormalStopped stateStopped{hw, &timer, &rpmsgtx};
     ControllerStateDiagnostic stateDiagnostic(hw, &timer, &rpmsgtx);
-    Controller *pCtrl;
 
     // controller shall observe incomming messages (thus register ctrl at rpmsg required)
     EXPECT_CALL(rpmsgtx, registerReceiver(_)).Times(1);
 
-    pCtrl= new Controller(hw, &rpmsgtx, stateDiagnostic, stateStopped, stateStarted);
-    delete pCtrl; // do not care for non-virtual destructor (there is no dynamic memory in pru)
-
+    Controller ctrl{hw, &rpmsgtx, stateDiagnostic, stateStopped, stateStarted};
 }
 
 TEST_F(ControllerTest2, Diagnostic_shallInitHwAndAllowHWControll)
