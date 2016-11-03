@@ -114,15 +114,18 @@ TEST(ControllerTest, Construction_shallRegisterForIncommingMessages)
     ControllerStateNormalStarted stateStarted{hw, &timer, &rpmsgtx, queue, ejectCommandPool};
     ControllerStateNormalStopped stateStopped{hw, &timer, &rpmsgtx};
     ControllerStateDiagnostic stateDiagnostic(hw, &timer, &rpmsgtx);
+    Controller ctrl{hw, &rpmsgtx, stateDiagnostic, stateStopped, stateStarted};
 
     // controller shall observe incomming messages (thus register ctrl at rpmsg required)
     EXPECT_CALL(rpmsgtx, registerReceiver(_)).Times(1);
 
-    Controller ctrl{hw, &rpmsgtx, stateDiagnostic, stateStopped, stateStarted};
+    ctrl.start();
 }
 
 TEST_F(ControllerTest2, Diagnostic_shallInitHwAndAllowHWControll)
 {
+    ctrl.start();
+
     // hw initialized
     EXPECT_CALL(motor, stop());
     EXPECT_CALL(p1, pull());
@@ -160,6 +163,8 @@ TEST_F(ControllerTest2, Diagnostic_shallInitHwAndAllowHWControll)
 
 TEST_F(ControllerTest2, StateNormalStartAndStop_shallStartAndStopMotorAndColorDetection)
 {
+    ctrl.start();
+
     // motor for conveyor belt shall be started
     EXPECT_CALL(motor, start()).Times(1);
 
@@ -177,6 +182,8 @@ TEST_F(ControllerTest2, StateNormalStartAndStop_shallStartAndStopMotorAndColorDe
 
 TEST_F(ControllerTest2, EmergencyStop_shallInitHw)
 {
+    ctrl.start();
+
     EXPECT_CALL(lbEmergencyStop, isInterrupted()).Times(0);
 
     // hw shall be inited

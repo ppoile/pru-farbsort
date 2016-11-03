@@ -18,6 +18,7 @@ public:
     Controller(Hw &hw, RpMsgTxInterface *rpmsg, ControllerStateDiagnostic &state_diagnostic, ControllerStateNormalStopped &state_normal_stopped, ControllerStateNormalStarted &state_normal_startedb);
 
 
+    void start();
     void processCmd(uint8_t cmd);
     void doIt();
     void setState(ControllerState* pState);

@@ -18,6 +18,9 @@ Controller::Controller(Hw &hw, RpMsgTxInterface *rpmsg, ControllerStateDiagnosti
                     state_normal_started(state_normal_started),
                     hw(hw),
                     rpmsg(rpmsg)
+{}
+
+void Controller::start()
 {
     pState = &state_normal_stopped;
     pState->onEntry();

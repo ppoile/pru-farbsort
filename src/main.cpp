@@ -129,6 +129,7 @@ void main()
     /* Allow OCP master port access by the PRU so the PRU can read external memories */
     CT_CFG.SYSCFG_bit.STANDBY_INIT = 0;
 
+    ctrl.start();
     rpmsg.start(); 
     timer.start();
 
