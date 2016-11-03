@@ -86,7 +86,7 @@ protected:
     StrictMock<MockLightBarrier> lb2;
     StrictMock<MockLightBarrier> lbEmergencyStop;
     StrictMock<MockTimer> timer;
-    NiceMock<MockRpMsgTx> rpmsgtx;  // use nice mock becaust ctrl-ctor calls it
+    StrictMock<MockRpMsgTx> rpmsgtx;
     Queue<Color,COLOR_QUEUE_SIZE> queue;
     ObjectPool<BrickEjectCommand, 5> ejectCommandPool;
 
@@ -128,6 +128,7 @@ TEST_F(ControllerTest2, Diagnostic_shallInitHwAndAllowHWControll)
     EXPECT_CALL(p1, pull());
     EXPECT_CALL(p2, pull());
     EXPECT_CALL(p3, pull());
+    EXPECT_CALL(rpmsgtx, registerReceiver(_));
 
     ctrl.start();
 
@@ -172,6 +173,7 @@ TEST_F(ControllerTest2, StateNormalStartAndStop_shallStartAndStopMotorAndColorDe
     EXPECT_CALL(p1, pull());
     EXPECT_CALL(p2, pull());
     EXPECT_CALL(p3, pull());
+    EXPECT_CALL(rpmsgtx, registerReceiver(_));
 
     ctrl.start();
 
@@ -196,6 +198,7 @@ TEST_F(ControllerTest2, EmergencyStop_shallInitHw)
     EXPECT_CALL(p1, pull());
     EXPECT_CALL(p2, pull());
     EXPECT_CALL(p3, pull());
+    EXPECT_CALL(rpmsgtx, registerReceiver(_));
 
     ctrl.start();
 
