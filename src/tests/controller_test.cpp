@@ -101,10 +101,10 @@ protected:
 
 TEST(ControllerTest, Construction_shallRegisterForIncommingMessages)
 {
-    MockMotor motor;
-    MockPiston p1;
-    MockPiston p2;
-    MockPiston p3;
+    NiceMock<MockMotor> motor;
+    NiceMock<MockPiston> p1;
+    NiceMock<MockPiston> p2;
+    NiceMock<MockPiston> p3;
 
 	Hw hw{&motor, &p1, &p2, &p3, 0, 0, 0, 0};
     MockRpMsgTx rpmsgtx;
