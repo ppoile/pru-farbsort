@@ -153,7 +153,7 @@ static uint32_t last_all_inputs_value;
 
 uint32_t get_input(uint32_t all_inputs_value, uint32_t mask)
 {
-  bool value = !((all_inputs_value & mask));
+  bool value = !(!(all_inputs_value & mask));
   bool last_value = !(!(last_all_inputs_value & mask));
   if (value != last_value) {
     on_input_change(mask, value, last_value);
