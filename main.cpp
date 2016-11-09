@@ -114,36 +114,36 @@ void on_input_change(uint32_t mask, int value, int last_value)
   if (mask == PULSECOUNTER_MASK) {
     if (value) {
       static const char pulsecounter_on[] = "pulsecounter=on\r";
-      pru_rpmsg_send(&transport, dst, src, (void*)pulsecounter_on, sizeof(pulsecounter_on) - 1);
+      pru_rpmsg_send(&transport, dst, src, (void*)pulsecounter_on, 16);
       processed_once = true;
     }
     else {
       static const char pulsecounter_off[] = "pulsecounter=off\r";
-      pru_rpmsg_send(&transport, dst, src, (void*)pulsecounter_off, sizeof(pulsecounter_off - 1));
+      pru_rpmsg_send(&transport, dst, src, (void*)pulsecounter_off, 17);
       processed_once = true;
     }
   }
   if (mask == LIGHTBARRIER1_MASK) {
     if (value) {
       static const char lightbarrier1_on[] = "lightbarrier1=on\r";
-      pru_rpmsg_send(&transport, dst, src, (void*)lightbarrier1_on, sizeof(lightbarrier1_on - 1));
+      pru_rpmsg_send(&transport, dst, src, (void*)lightbarrier1_on, 17);
       processed_once = true;
     }
     else {
       static const char lightbarrier1_off[] = "lightbarrier1=off\r";
-      pru_rpmsg_send(&transport, dst, src, (void*)lightbarrier1_off, sizeof(lightbarrier1_off - 1));
+      pru_rpmsg_send(&transport, dst, src, (void*)lightbarrier1_off, 18);
       processed_once = true;
     }
   }
   if (mask == LIGHTBARRIER2_MASK) {
     if (value) {
       static const char lightbarrier2_on[] = "lightbarrier2=on\r";
-      pru_rpmsg_send(&transport, dst, src, (void*)lightbarrier2_on, sizeof(lightbarrier2_on - 1));
+      pru_rpmsg_send(&transport, dst, src, (void*)lightbarrier2_on, 17);
       processed_once = true;
     }
     else {
       static const char lightbarrier2_off[] = "lightbarrier2=off\r";
-      pru_rpmsg_send(&transport, dst, src, (void*)lightbarrier2_off, sizeof(lightbarrier2_off - 1));
+      pru_rpmsg_send(&transport, dst, src, (void*)lightbarrier2_off, 18);
       processed_once = true;
     }
   }
