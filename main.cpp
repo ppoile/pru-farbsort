@@ -105,7 +105,9 @@ uint16_t src=0xFFFF, dst=0xFFFF, len=0xFFFF;
 
 void on_input_change(uint32_t mask, int value, int last_value)
 {
-  if (src == 0xFFFF) {
+  static bool processed_once = false;
+
+  if ((src == 0xFFFF) || processed_once) {
     return;
   }
 
@@ -113,30 +115,36 @@ void on_input_change(uint32_t mask, int value, int last_value)
     if (value) {
       static const char pulsecounter_on[] = "pulsecounter=on\r";
       pru_rpmsg_send(&transport, dst, src, (void*)pulsecounter_on, sizeof(pulsecounter_on) - 1);
+      processed_once = true;
     }
     else {
       static const char pulsecounter_off[] = "pulsecounter=off\r";
       pru_rpmsg_send(&transport, dst, src, (void*)pulsecounter_off, sizeof(pulsecounter_off - 1));
+      processed_once = true;
     }
   }
   if (mask == LIGHTBARRIER1_MASK) {
     if (value) {
       static const char lightbarrier1_on[] = "lightbarrier1=on\r";
       pru_rpmsg_send(&transport, dst, src, (void*)lightbarrier1_on, sizeof(lightbarrier1_on - 1));
+      processed_once = true;
     }
     else {
       static const char lightbarrier1_off[] = "lightbarrier1=off\r";
       pru_rpmsg_send(&transport, dst, src, (void*)lightbarrier1_off, sizeof(lightbarrier1_off - 1));
+      processed_once = true;
     }
   }
   if (mask == LIGHTBARRIER2_MASK) {
     if (value) {
       static const char lightbarrier2_on[] = "lightbarrier2=on\r";
       pru_rpmsg_send(&transport, dst, src, (void*)lightbarrier2_on, sizeof(lightbarrier2_on - 1));
+      processed_once = true;
     }
     else {
       static const char lightbarrier2_off[] = "lightbarrier2=off\r";
       pru_rpmsg_send(&transport, dst, src, (void*)lightbarrier2_off, sizeof(lightbarrier2_off - 1));
+      processed_once = true;
     }
   }
 }
@@ -155,10 +163,6 @@ uint32_t get_input(uint32_t all_inputs_value, uint32_t mask)
 
 void process_inputs(uint32_t all_inputs_value)
 {
-  if (src == 0xFFFF) {
-    return;
-  }
-
   get_input(all_inputs_value, PULSECOUNTER_MASK);
   //get_input(all_inputs_value, LIGHTBARRIER1_MASK);
   //get_input(all_inputs_value, LIGHTBARRIER2_MASK);
