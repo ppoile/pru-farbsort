@@ -148,8 +148,8 @@ uint32_t get_input(uint32_t all_inputs_value, uint32_t mask)
 void process_inputs(uint32_t all_inputs_value)
 {
   get_input(all_inputs_value, PULSECOUNTER_MASK);
-  //get_input(all_inputs_value, LIGHTBARRIER1_MASK);
-  //get_input(all_inputs_value, LIGHTBARRIER2_MASK);
+  get_input(all_inputs_value, LIGHTBARRIER1_MASK);
+  get_input(all_inputs_value, LIGHTBARRIER2_MASK);
 
   last_all_inputs_value = all_inputs_value;
 }
