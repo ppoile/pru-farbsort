@@ -81,14 +81,6 @@ volatile register uint32_t __R31;
 
 uint8_t payload[RPMSG_BUF_SIZE];
 
-static void sleepMs(uint32_t value)
-{
-  uint32_t i;
-  for (i = 0; i < value; i++) {
-    __delay_cycles(200000);
-  }
-}
-
 static const uint32_t MOTOR_MASK = 0x8000;
 static const uint32_t VALVE1_MASK = 0x4000;
 static const uint32_t VALVE2_MASK = 0x80;
