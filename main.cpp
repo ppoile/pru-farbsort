@@ -93,12 +93,15 @@ static const uint32_t LIGHTBARRIER1_MASK = 0x4000;
 static const uint32_t LIGHTBARRIER2_MASK = 0x10000;
 static const uint32_t LIGHTBARRIERS3_TO_5_MASK = 0x4;
 
-struct pru_rpmsg_transport transport;
-uint16_t src=0xFFFF, dst=0xFFFF, len=0xFFFF;
-uint32_t now = 0;
-uint32_t pulsecounter_last_change = 0;
-bool conveyor_running = false;
+enum Mode { STOPPED, RUNNING, DIAGNOSTIC };
 
+Mode mode;
+uint32_t pulsecounter_last_change;
+bool conveyor_running;
+struct pru_rpmsg_transport transport;
+uint16_t src, dst, len;
+uint32_t now;
+uint32_t last_all_inputs_value;
 
 int16_t post_event(void *event, uint16_t length)
 {
@@ -111,13 +114,23 @@ int16_t post_event(void *event, uint16_t length)
 void on_input_change(uint32_t mask, int value, int last_value)
 {
   if (mask == LIGHTBARRIERS3_TO_5_MASK) {
-    if (value) {
-      static const char emergency_stop_on[] = "emergency-stop=on\n";
-      post_event((void*)emergency_stop_on, 18);
+    if (mode==RUNNING) {
+      if (value) {
+        __R30 &= ~MOTOR_MASK;
+        mode=STOPPED;
+        static const char emergency_motor_stop[] = "motor=stop (emergency-stop)\n";
+        post_event((void*)emergency_motor_stop, 28);
+      }
     }
     else {
-      static const char emergency_stop_off[] = "emergency-stop=off\n";
-      post_event((void*)emergency_stop_off, 19);
+      if (value) {
+        static const char emergency_stop_on[] = "emergency-stop=on\n";
+        post_event((void*)emergency_stop_on, 18);
+      }
+      else {
+        static const char emergency_stop_off[] = "emergency-stop=off\n";
+        post_event((void*)emergency_stop_off, 19);
+      }
     }
   }
   if (mask == PULSECOUNTER_MASK) {
@@ -150,8 +163,6 @@ void on_input_change(uint32_t mask, int value, int last_value)
   }
 }
 
-static uint32_t last_all_inputs_value;
-
 uint32_t get_input(uint32_t all_inputs_value, uint32_t mask)
 {
   bool value = !(!(all_inputs_value & mask));
@@ -181,12 +192,18 @@ void process_inputs(uint32_t all_inputs_value)
   last_all_inputs_value = all_inputs_value;
 }
 
-
 void main() {
-	volatile uint8_t *status;
-
-        last_all_inputs_value = ~__R31;
+	mode = DIAGNOSTIC;
+	pulsecounter_last_change = 0;
+	conveyor_running = false;
+	src=0xFFFF;
+	dst=0xFFFF;
+	len=0xFFFF;
+	now = 0;
+	last_all_inputs_value = ~__R31;
 	__R30 = 0;
+
+	volatile uint8_t *status;
 
 	/* allow OCP master port access by the PRU so the PRU can read external memories */
 	CT_CFG.SYSCFG_bit.STANDBY_INIT = 0;
@@ -233,39 +250,48 @@ void main() {
 						rc = strncmp((char*)payload, "connect\r", len);
 						if (rc == 0) {
 						}
-						rc = strncmp((char*)payload, "motor=start\r", len);
+						rc = strncmp((char*)payload, "mode=stopped\r", len);
 						if (rc == 0) {
-							__R30 |= MOTOR_MASK;
+                                                  mode = STOPPED;
 						}
-						rc = strncmp((char*)payload, "motor=stop\r", len);
+						rc = strncmp((char*)payload, "mode=diagnostic\r", len);
 						if (rc == 0) {
-							__R30 &= ~MOTOR_MASK;
+                                                  mode = DIAGNOSTIC;
 						}
-						rc = strncmp((char*)payload, "valve1=on\r", len);
-						if (rc == 0) {
-							__R30 |= VALVE1_MASK;
-						}
-						rc = strncmp((char*)payload, "valve1=off\r", len);
-						if (rc == 0) {
-							__R30 &= ~VALVE1_MASK;
-						}
-						rc = strncmp((char*)payload, "valve2=on\r", len);
-						if (rc == 0) {
-							__R30 |= VALVE2_MASK;
-						}
-						rc = strncmp((char*)payload, "valve2=off\r", len);
-						if (rc == 0) {
-							__R30 &= ~VALVE2_MASK;
-						}
-						rc = strncmp((char*)payload, "valve3=on\r", len);
-						if (rc == 0) {
-							__R30 |= VALVE3_MASK;
-						}
-						rc = strncmp((char*)payload, "valve3=off\r", len);
-						if (rc == 0) {
-							__R30 &= ~VALVE3_MASK;
-						}
-
+						if (mode == DIAGNOSTIC) {
+							rc = strncmp((char*)payload, "motor=start\r", len);
+							if (rc == 0) {
+								__R30 |= MOTOR_MASK;
+							}
+							rc = strncmp((char*)payload, "motor=stop\r", len);
+							if (rc == 0) {
+								__R30 &= ~MOTOR_MASK;
+							}
+							rc = strncmp((char*)payload, "valve1=on\r", len);
+							if (rc == 0) {
+								__R30 |= VALVE1_MASK;
+							}
+							rc = strncmp((char*)payload, "valve1=off\r", len);
+							if (rc == 0) {
+								__R30 &= ~VALVE1_MASK;
+							}
+							rc = strncmp((char*)payload, "valve2=on\r", len);
+							if (rc == 0) {
+								__R30 |= VALVE2_MASK;
+							}
+							rc = strncmp((char*)payload, "valve2=off\r", len);
+							if (rc == 0) {
+								__R30 &= ~VALVE2_MASK;
+							}
+							rc = strncmp((char*)payload, "valve3=on\r", len);
+							if (rc == 0) {
+								__R30 |= VALVE3_MASK;
+							}
+							rc = strncmp((char*)payload, "valve3=off\r", len);
+							if (rc == 0) {
+								__R30 &= ~VALVE3_MASK;
+							}
+                                                }
 
                                                 char buffer[100];
                                                 char *p = buffer;
