@@ -95,42 +95,47 @@ static const uint32_t LIGHTBARRIER2_MASK = 0x10000;
 
 struct pru_rpmsg_transport transport;
 uint16_t src=0xFFFF, dst=0xFFFF, len=0xFFFF;
+uint32_t now = 0;
+uint32_t pulsecounter_last_change = 0;
+bool conveyor_running = false;
 
+
+int16_t post_event(void *event, uint16_t length)
+{
+  if (src == 0xFFFF) {
+    return -4; //RPMSG_NOT_CONNECTED
+  }
+  return pru_rpmsg_send(&transport, dst, src, event, length);
+}
 
 void on_input_change(uint32_t mask, int value, int last_value)
 {
-  if (src == 0xFFFF) {
-    return;
-  }
-
   if (mask == PULSECOUNTER_MASK) {
-    if (value) {
-      static const char pulsecounter_on[] = "pulsecounter=on\r";
-      pru_rpmsg_send(&transport, dst, src, (void*)pulsecounter_on, 16);
-    }
-    else {
-      static const char pulsecounter_off[] = "pulsecounter=off\r";
-      pru_rpmsg_send(&transport, dst, src, (void*)pulsecounter_off, 17);
+    pulsecounter_last_change = timer_get_ticks();
+    if (!conveyor_running) {
+      conveyor_running = true;
+      static const char conveyor_running[] = "conveyor=running\n";
+      post_event((void*)conveyor_running, 17);
     }
   }
   if (mask == LIGHTBARRIER1_MASK) {
     if (value) {
-      static const char lightbarrier1_on[] = "lightbarrier1=on\r";
-      pru_rpmsg_send(&transport, dst, src, (void*)lightbarrier1_on, 17);
+      static const char lightbarrier1_on[] = "lightbarrier1=on\n";
+      post_event((void*)lightbarrier1_on, 17);
     }
     else {
-      static const char lightbarrier1_off[] = "lightbarrier1=off\r";
-      pru_rpmsg_send(&transport, dst, src, (void*)lightbarrier1_off, 18);
+      static const char lightbarrier1_off[] = "lightbarrier1=off\n";
+      post_event((void*)lightbarrier1_off, 18);
     }
   }
   if (mask == LIGHTBARRIER2_MASK) {
     if (value) {
-      static const char lightbarrier2_on[] = "lightbarrier2=on\r";
-      pru_rpmsg_send(&transport, dst, src, (void*)lightbarrier2_on, 17);
+      static const char lightbarrier2_on[] = "lightbarrier2=on\n";
+      post_event((void*)lightbarrier2_on, 17);
     }
     else {
-      static const char lightbarrier2_off[] = "lightbarrier2=off\r";
-      pru_rpmsg_send(&transport, dst, src, (void*)lightbarrier2_off, 18);
+      static const char lightbarrier2_off[] = "lightbarrier2=off\n";
+      post_event((void*)lightbarrier2_off, 18);
     }
   }
 }
@@ -149,6 +154,15 @@ uint32_t get_input(uint32_t all_inputs_value, uint32_t mask)
 
 void process_inputs(uint32_t all_inputs_value)
 {
+  if (conveyor_running) {
+    int32_t ticks_since_last_change = now - pulsecounter_last_change;
+    if (ticks_since_last_change > 100) {
+      conveyor_running = false;
+      static const char conveyor_stopped[] = "conveyor=stopped\n";
+      post_event((void*)conveyor_stopped, 17);
+    }
+  }
+
   get_input(all_inputs_value, PULSECOUNTER_MASK);
   get_input(all_inputs_value, LIGHTBARRIER1_MASK);
   get_input(all_inputs_value, LIGHTBARRIER2_MASK);
@@ -187,6 +201,8 @@ void main() {
 
 	while (1) {
 		timer_poll();
+                now = timer_get_ticks();
+
 		/* Check bit 30 of register R31 to see if the mailbox interrupt has occurred */
 		if (__R31 & HOST_INT) {
 			/* Clear the mailbox interrupt */
@@ -244,9 +260,8 @@ void main() {
                                                 char *p = buffer;
                                                 strcpy(p, "ticks=0x");
                                                 p += 8;
-                                                uint32_t timestamp = get_ticks();
                                                 for (int nibble_index = 7; nibble_index >= 0; --nibble_index) {
-                                                  uint32_t nibble = (timestamp >> (nibble_index * 4)) & 0xF;
+                                                  uint32_t nibble = (now >> (nibble_index * 4)) & 0xF;
                                                   char ch;
                                                   if (nibble <= 9) {
                                                     ch = '0' + nibble;
@@ -257,7 +272,7 @@ void main() {
                                                   *p++ = ch;
                                                 }
                                                 *p++ = '\n';
-                                                pru_rpmsg_send(&transport, dst, src, (void*)buffer, (unsigned)p - (unsigned)buffer);
+                                                post_event((void*)buffer, (unsigned)p - (unsigned)buffer);
 
 						/* Echo the message back to the same address from which we just received */
 						pru_rpmsg_send(&transport, dst, src, payload, len);

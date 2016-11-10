@@ -75,7 +75,7 @@ void timer_stop()
   CT_INTC.SECR0 = (1 << 7);
 }
 
-uint32_t get_ticks()
+uint32_t timer_get_ticks()
 {
   return ticks;
 }
