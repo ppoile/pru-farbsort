@@ -48,6 +48,7 @@ extern "C" {
 #include "resource_table_0.h"
 }
 
+#include "scheduled_output_action.h"
 #include "timer.h"
 
 
@@ -113,11 +114,12 @@ int16_t post_event(void *event, uint16_t length)
   return pru_rpmsg_send(&transport, dst, src, event, length);
 }
 
-std::list<uint32_t> pusher_actions;
+std::list<ScheduledOutputAction> pusher_actions;
 
-void schedule_pusher_action(uint32_t timestamp)
+void schedule_pusher_action(uint32_t timestamp, uint32_t bitmask, bool value)
 {
-  pusher_actions.push_back(timestamp);
+  ScheduledOutputAction action(timestamp, bitmask, value);
+  pusher_actions.push_back(action);
 }
 
 void check_scheduled_pusher_actions()
@@ -125,14 +127,19 @@ void check_scheduled_pusher_actions()
   if (pusher_actions.size() == 0) {
     return;
   }
-  uint32_t next_action = pusher_actions.front();
-  if (now < next_action) {
+  ScheduledOutputAction &next_action = pusher_actions.front();
+  if (now < next_action.timestamp) {
     return;
   }
-  __R30 |= VALVE1_MASK;
+  static const char timeout[] = "timeout\n";
+  post_event((void*)timeout, 8);
+  if (next_action.value) {
+    __R30 |= next_action.bitmask;
+  }
+  else {
+    __R30 &= ~next_action.bitmask;
+  }
   pusher_actions.pop_front();
-  static const char scheduled_pusher_action_timeout[] = "scheduled-pusher-action: timeout\n";
-  post_event((void*)scheduled_pusher_action_timeout, 22);
 }
 
 void on_input_change(uint32_t mask, int value, int last_value)
@@ -179,7 +186,8 @@ void on_input_change(uint32_t mask, int value, int last_value)
     if (value) {
       static const char lightbarrier2_on[] = "lightbarrier2=on\n";
       post_event((void*)lightbarrier2_on, 17);
-      schedule_pusher_action(now + 69);
+      schedule_pusher_action(now + 69, VALVE1_MASK, true);
+      schedule_pusher_action(now + 99, VALVE1_MASK, false);
     }
     else {
       static const char lightbarrier2_off[] = "lightbarrier2=off\n";
