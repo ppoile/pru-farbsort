@@ -131,8 +131,23 @@ void check_scheduled_pusher_actions()
   if (now < next_action.timestamp) {
     return;
   }
-  static const char timeout[] = "timeout\n";
-  post_event((void*)timeout, 8);
+  char timeout[] = "timeout: pusherX=Y\n";
+  if (next_action.bitmask == VALVE1_MASK) {
+    timeout[15] = '1';
+  }
+  else if (next_action.bitmask == VALVE2_MASK) {
+    timeout[15] = '2';
+  }
+  else if (next_action.bitmask == VALVE3_MASK) {
+    timeout[15] = '3';
+  }
+  if (next_action.value) {
+    timeout[17] = '1';
+  }
+  else {
+    timeout[17] = '0';
+  }
+  post_event((void*)timeout, 19);
   if (next_action.value) {
     __R30 |= next_action.bitmask;
   }
@@ -186,8 +201,14 @@ void on_input_change(uint32_t mask, int value, int last_value)
     if (value) {
       static const char lightbarrier2_on[] = "lightbarrier2=on\n";
       post_event((void*)lightbarrier2_on, 17);
-      schedule_pusher_action(now + 69, VALVE1_MASK, true);
-      schedule_pusher_action(now + 99, VALVE1_MASK, false);
+      if (mode == RUNNING) {
+        //schedule_pusher_action(now + 69, VALVE1_MASK, true);
+        //schedule_pusher_action(now + 99, VALVE1_MASK, false);
+        schedule_pusher_action(now + 166, VALVE2_MASK, true);
+        schedule_pusher_action(now + 136, VALVE2_MASK, false);
+        //schedule_pusher_action(now + 274, VALVE3_MASK, true);
+        //schedule_pusher_action(now + 304, VALVE3_MASK, false);
+      }
     }
     else {
       static const char lightbarrier2_off[] = "lightbarrier2=off\n";
