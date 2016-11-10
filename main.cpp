@@ -193,126 +193,128 @@ void process_inputs(uint32_t all_inputs_value)
 }
 
 void main() {
-	mode = DIAGNOSTIC;
-	pulsecounter_last_change = 0;
-	conveyor_running = false;
-	src=0xFFFF;
-	dst=0xFFFF;
-	len=0xFFFF;
-	now = 0;
-	last_all_inputs_value = ~__R31;
-	__R30 = 0;
+  mode = DIAGNOSTIC;
+  pulsecounter_last_change = 0;
+  conveyor_running = false;
+  src=0xFFFF;
+  dst=0xFFFF;
+  len=0xFFFF;
+  now = 0;
+  last_all_inputs_value = ~__R31;
+  __R30 = 0;
 
-	volatile uint8_t *status;
+  volatile uint8_t *status;
 
-	/* allow OCP master port access by the PRU so the PRU can read external memories */
-	CT_CFG.SYSCFG_bit.STANDBY_INIT = 0;
+  /* allow OCP master port access by the PRU so the PRU can read external memories */
+  CT_CFG.SYSCFG_bit.STANDBY_INIT = 0;
 
-	/* clear the status of event MB_INT_NUMBER (the mailbox event) and enable the mailbox event */
-	CT_INTC.SICR_bit.STS_CLR_IDX = MB_INT_NUMBER;
-	CT_MBX.IRQ[MB_USER].ENABLE_SET |= 1 << (MB_FROM_ARM_HOST * 2);
+  /* clear the status of event MB_INT_NUMBER (the mailbox event) and enable the mailbox event */
+  CT_INTC.SICR_bit.STS_CLR_IDX = MB_INT_NUMBER;
+  CT_MBX.IRQ[MB_USER].ENABLE_SET |= 1 << (MB_FROM_ARM_HOST * 2);
 
-	/* Make sure the Linux drivers are ready for RPMsg communication */
-	status = &resourceTable.rpmsg_vdev.status;
-	while (!(*status & VIRTIO_CONFIG_S_DRIVER_OK));
+  /* Make sure the Linux drivers are ready for RPMsg communication */
+  status = &resourceTable.rpmsg_vdev.status;
+  while (!(*status & VIRTIO_CONFIG_S_DRIVER_OK));
 
-	/* Initialize pru_virtqueue corresponding to vring0 (PRU to ARM Host direction) */
-	pru_virtqueue_init(&transport.virtqueue0, &resourceTable.rpmsg_vring0, &CT_MBX.MESSAGE[MB_TO_ARM_HOST], &CT_MBX.MESSAGE[MB_FROM_ARM_HOST]);
+  /* Initialize pru_virtqueue corresponding to vring0 (PRU to ARM Host direction) */
+  pru_virtqueue_init(&transport.virtqueue0, &resourceTable.rpmsg_vring0, &CT_MBX.MESSAGE[MB_TO_ARM_HOST], &CT_MBX.MESSAGE[MB_FROM_ARM_HOST]);
 
-	/* Initialize pru_virtqueue corresponding to vring1 (ARM Host to PRU direction) */
-	pru_virtqueue_init(&transport.virtqueue1, &resourceTable.rpmsg_vring1, &CT_MBX.MESSAGE[MB_TO_ARM_HOST], &CT_MBX.MESSAGE[MB_FROM_ARM_HOST]);
+  /* Initialize pru_virtqueue corresponding to vring1 (ARM Host to PRU direction) */
+  pru_virtqueue_init(&transport.virtqueue1, &resourceTable.rpmsg_vring1, &CT_MBX.MESSAGE[MB_TO_ARM_HOST], &CT_MBX.MESSAGE[MB_FROM_ARM_HOST]);
 
-	/* Create the RPMsg channel between the PRU and ARM user space using the transport structure. */
-	while (pru_rpmsg_channel(RPMSG_NS_CREATE, &transport, CHAN_NAME, CHAN_DESC, CHAN_PORT) != PRU_RPMSG_SUCCESS);
+  /* Create the RPMsg channel between the PRU and ARM user space using the transport structure. */
+  while (pru_rpmsg_channel(RPMSG_NS_CREATE, &transport, CHAN_NAME, CHAN_DESC, CHAN_PORT) != PRU_RPMSG_SUCCESS);
 
-        timer_start();
+  timer_start();
 
-	while (1) {
-		timer_poll();
-                now = timer_get_ticks();
+  while (1) {
+    timer_poll();
+    now = timer_get_ticks();
 
-		/* Check bit 30 of register R31 to see if the mailbox interrupt has occurred */
-		if (__R31 & HOST_INT) {
-			/* Clear the mailbox interrupt */
-			CT_MBX.IRQ[MB_USER].STATUS_CLR |= 1 << (MB_FROM_ARM_HOST * 2);
-			/* Clear the event status, event MB_INT_NUMBER corresponds to the mailbox interrupt */
-			CT_INTC.SICR_bit.STS_CLR_IDX = MB_INT_NUMBER;
-			/* Use a while loop to read all of the current messages in the mailbox */
-			while (CT_MBX.MSGSTATUS_bit[MB_FROM_ARM_HOST].NBOFMSG > 0) {
-				/* Check to see if the message corresponds to a receive event for the PRU */
-				if (CT_MBX.MESSAGE[MB_FROM_ARM_HOST] == 1) {
-					/* Receive the message */
-					if (pru_rpmsg_receive(&transport, &src, &dst, payload, &len) == PRU_RPMSG_SUCCESS) {
-						int rc;
-						if (len < RPMSG_BUF_SIZE) {
-							payload[len] = '\0';
-						}
-						rc = strncmp((char*)payload, "connect\r", len);
-						if (rc == 0) {
-						}
-						rc = strncmp((char*)payload, "mode=stopped\r", len);
-						if (rc == 0) {
-                                                  mode = STOPPED;
-						}
-						rc = strncmp((char*)payload, "mode=diagnostic\r", len);
-						if (rc == 0) {
-                                                  mode = DIAGNOSTIC;
-						}
-						if (mode == STOPPED) {
-							rc = strncmp((char*)payload, "start\r", len);
-							if (rc == 0) {
-								__R30 |= MOTOR_MASK;
-                                                                mode = RUNNING;
-							}
-                                                }
-						if (mode == RUNNING) {
-							rc = strncmp((char*)payload, "stop\r", len);
-							if (rc == 0) {
-								__R30 &= ~MOTOR_MASK;
-                                                                mode = STOPPED;
-							}
-                                                }
-						if (mode == DIAGNOSTIC) {
-							rc = strncmp((char*)payload, "motor=start\r", len);
-							if (rc == 0) {
-								__R30 |= MOTOR_MASK;
-							}
-							rc = strncmp((char*)payload, "motor=stop\r", len);
-							if (rc == 0) {
-								__R30 &= ~MOTOR_MASK;
-							}
-							rc = strncmp((char*)payload, "valve1=on\r", len);
-							if (rc == 0) {
-								__R30 |= VALVE1_MASK;
-							}
-							rc = strncmp((char*)payload, "valve1=off\r", len);
-							if (rc == 0) {
-								__R30 &= ~VALVE1_MASK;
-							}
-							rc = strncmp((char*)payload, "valve2=on\r", len);
-							if (rc == 0) {
-								__R30 |= VALVE2_MASK;
-							}
-							rc = strncmp((char*)payload, "valve2=off\r", len);
-							if (rc == 0) {
-								__R30 &= ~VALVE2_MASK;
-							}
-							rc = strncmp((char*)payload, "valve3=on\r", len);
-							if (rc == 0) {
-								__R30 |= VALVE3_MASK;
-							}
-							rc = strncmp((char*)payload, "valve3=off\r", len);
-							if (rc == 0) {
-								__R30 &= ~VALVE3_MASK;
-							}
-                                                }
+    /* Check bit 30 of register R31 to see if the mailbox interrupt has occurred */
+    if (__R31 & HOST_INT) {
+      /* Clear the mailbox interrupt */
+      CT_MBX.IRQ[MB_USER].STATUS_CLR |= 1 << (MB_FROM_ARM_HOST * 2);
 
-						/* Echo the message back to the same address from which we just received */
-						pru_rpmsg_send(&transport, dst, src, payload, len);
-					}
-				}
-			}
-		}
-		process_inputs(__R31);
-	}
+      /* Clear the event status, event MB_INT_NUMBER corresponds to the mailbox interrupt */
+      CT_INTC.SICR_bit.STS_CLR_IDX = MB_INT_NUMBER;
+
+      /* Use a while loop to read all of the current messages in the mailbox */
+      while (CT_MBX.MSGSTATUS_bit[MB_FROM_ARM_HOST].NBOFMSG > 0) {
+        /* Check to see if the message corresponds to a receive event for the PRU */
+        if (CT_MBX.MESSAGE[MB_FROM_ARM_HOST] == 1) {
+          /* Receive the message */
+          if (pru_rpmsg_receive(&transport, &src, &dst, payload, &len) == PRU_RPMSG_SUCCESS) {
+            int rc;
+            if (len < RPMSG_BUF_SIZE) {
+              payload[len] = '\0';
+            }
+            rc = strncmp((char*)payload, "connect\r", len);
+            if (rc == 0) {
+            }
+            rc = strncmp((char*)payload, "mode=stopped\r", len);
+            if (rc == 0) {
+              mode = STOPPED;
+            }
+            rc = strncmp((char*)payload, "mode=diagnostic\r", len);
+            if (rc == 0) {
+              mode = DIAGNOSTIC;
+            }
+            if (mode == STOPPED) {
+              rc = strncmp((char*)payload, "start\r", len);
+              if (rc == 0) {
+                __R30 |= MOTOR_MASK;
+                mode = RUNNING;
+              }
+            }
+            if (mode == RUNNING) {
+              rc = strncmp((char*)payload, "stop\r", len);
+              if (rc == 0) {
+                __R30 &= ~MOTOR_MASK;
+                mode = STOPPED;
+              }
+            }
+            if (mode == DIAGNOSTIC) {
+              rc = strncmp((char*)payload, "motor=start\r", len);
+              if (rc == 0) {
+                __R30 |= MOTOR_MASK;
+              }
+              rc = strncmp((char*)payload, "motor=stop\r", len);
+              if (rc == 0) {
+                __R30 &= ~MOTOR_MASK;
+              }
+              rc = strncmp((char*)payload, "valve1=on\r", len);
+              if (rc == 0) {
+                __R30 |= VALVE1_MASK;
+              }
+              rc = strncmp((char*)payload, "valve1=off\r", len);
+              if (rc == 0) {
+                __R30 &= ~VALVE1_MASK;
+              }
+              rc = strncmp((char*)payload, "valve2=on\r", len);
+              if (rc == 0) {
+                __R30 |= VALVE2_MASK;
+              }
+              rc = strncmp((char*)payload, "valve2=off\r", len);
+              if (rc == 0) {
+                __R30 &= ~VALVE2_MASK;
+              }
+              rc = strncmp((char*)payload, "valve3=on\r", len);
+              if (rc == 0) {
+                __R30 |= VALVE3_MASK;
+              }
+              rc = strncmp((char*)payload, "valve3=off\r", len);
+              if (rc == 0) {
+                __R30 &= ~VALVE3_MASK;
+              }
+            }
+
+            /* Echo the message back to the same address from which we just received */
+            pru_rpmsg_send(&transport, dst, src, payload, len);
+          }
+        }
+      }
+    }
+    process_inputs(__R31);
+  }
 }
