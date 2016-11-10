@@ -239,6 +239,26 @@ void main() {
 							__R30 &= ~VALVE3_MASK;
 						}
 
+
+                                                char buffer[100];
+                                                char *p = buffer;
+                                                strcpy(p, "ticks=0x");
+                                                p += 8;
+                                                uint32_t timestamp = get_ticks();
+                                                for (int nibble_index = 7; nibble_index >= 0; --nibble_index) {
+                                                  uint32_t nibble = (timestamp >> (nibble_index * 4)) & 0xF;
+                                                  char ch;
+                                                  if (nibble <= 9) {
+                                                    ch = '0' + nibble;
+                                                  }
+                                                  else {
+                                                    ch = 'a' + nibble - 10;
+                                                  }
+                                                  *p++ = ch;
+                                                }
+                                                *p++ = '\n';
+                                                pru_rpmsg_send(&transport, dst, src, (void*)buffer, (unsigned)p - (unsigned)buffer);
+
 						/* Echo the message back to the same address from which we just received */
 						pru_rpmsg_send(&transport, dst, src, payload, len);
 					}
