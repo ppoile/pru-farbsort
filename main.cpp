@@ -31,7 +31,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <list>
 #include <string>
+
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -111,6 +113,12 @@ int16_t post_event(void *event, uint16_t length)
   return pru_rpmsg_send(&transport, dst, src, event, length);
 }
 
+std::list<uint32_t> pusher_actions;
+void schedule_pusher(uint32_t timestamp)
+{
+  pusher_actions.push_back(timestamp);
+}
+
 void on_input_change(uint32_t mask, int value, int last_value)
 {
   if (mask == LIGHTBARRIERS3_TO_5_MASK) {
@@ -155,6 +163,7 @@ void on_input_change(uint32_t mask, int value, int last_value)
     if (value) {
       static const char lightbarrier2_on[] = "lightbarrier2=on\n";
       post_event((void*)lightbarrier2_on, 17);
+      schedule_pusher(now + 69);
     }
     else {
       static const char lightbarrier2_off[] = "lightbarrier2=off\n";
