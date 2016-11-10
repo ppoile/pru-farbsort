@@ -164,6 +164,11 @@ uint32_t get_input(uint32_t all_inputs_value, uint32_t mask)
 
 void process_inputs(uint32_t all_inputs_value)
 {
+  get_input(all_inputs_value, LIGHTBARRIERS3_TO_5_MASK);
+  get_input(all_inputs_value, PULSECOUNTER_MASK);
+  get_input(all_inputs_value, LIGHTBARRIER1_MASK);
+  get_input(all_inputs_value, LIGHTBARRIER2_MASK);
+
   if (conveyor_running) {
     int32_t ticks_since_last_change = now - pulsecounter_last_change;
     if (ticks_since_last_change > 100) {
@@ -172,11 +177,6 @@ void process_inputs(uint32_t all_inputs_value)
       post_event((void*)conveyor_stopped, 17);
     }
   }
-
-  get_input(all_inputs_value, PULSECOUNTER_MASK);
-  get_input(all_inputs_value, LIGHTBARRIER1_MASK);
-  get_input(all_inputs_value, LIGHTBARRIER2_MASK);
-  get_input(all_inputs_value, LIGHTBARRIERS3_TO_5_MASK);
 
   last_all_inputs_value = all_inputs_value;
 }
