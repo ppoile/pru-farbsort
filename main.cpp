@@ -188,51 +188,51 @@ void main() {
 	while (1) {
 		timer_poll();
 		/* Check bit 30 of register R31 to see if the mailbox interrupt has occurred */
-		if(__R31 & HOST_INT){
+		if (__R31 & HOST_INT) {
 			/* Clear the mailbox interrupt */
 			CT_MBX.IRQ[MB_USER].STATUS_CLR |= 1 << (MB_FROM_ARM_HOST * 2);
 			/* Clear the event status, event MB_INT_NUMBER corresponds to the mailbox interrupt */
 			CT_INTC.SICR_bit.STS_CLR_IDX = MB_INT_NUMBER;
 			/* Use a while loop to read all of the current messages in the mailbox */
-			while(CT_MBX.MSGSTATUS_bit[MB_FROM_ARM_HOST].NBOFMSG > 0){
+			while (CT_MBX.MSGSTATUS_bit[MB_FROM_ARM_HOST].NBOFMSG > 0) {
 				/* Check to see if the message corresponds to a receive event for the PRU */
-				if(CT_MBX.MESSAGE[MB_FROM_ARM_HOST] == 1){
+				if (CT_MBX.MESSAGE[MB_FROM_ARM_HOST] == 1) {
 					/* Receive the message */
-					if(pru_rpmsg_receive(&transport, &src, &dst, payload, &len) == PRU_RPMSG_SUCCESS){
+					if (pru_rpmsg_receive(&transport, &src, &dst, payload, &len) == PRU_RPMSG_SUCCESS) {
 						int rc;
-						if(len < RPMSG_BUF_SIZE){
+						if (len < RPMSG_BUF_SIZE) {
 							payload[len] = '\0';
 						}
 						rc = strncmp((char*)payload, "motor=start\r", len);
-						if(rc == 0){
+						if (rc == 0) {
 							__R30 |= MOTOR_MASK;
 						}
 						rc = strncmp((char*)payload, "motor=stop\r", len);
-						if(rc == 0){
+						if (rc == 0) {
 							__R30 &= ~MOTOR_MASK;
 						}
 						rc = strncmp((char*)payload, "valve1=on\r", len);
-						if(rc == 0){
+						if (rc == 0) {
 							__R30 |= VALVE1_MASK;
 						}
 						rc = strncmp((char*)payload, "valve1=off\r", len);
-						if(rc == 0){
+						if (rc == 0) {
 							__R30 &= ~VALVE1_MASK;
 						}
 						rc = strncmp((char*)payload, "valve2=on\r", len);
-						if(rc == 0){
+						if (rc == 0) {
 							__R30 |= VALVE2_MASK;
 						}
 						rc = strncmp((char*)payload, "valve2=off\r", len);
-						if(rc == 0){
+						if (rc == 0) {
 							__R30 &= ~VALVE2_MASK;
 						}
 						rc = strncmp((char*)payload, "valve3=on\r", len);
-						if(rc == 0){
+						if (rc == 0) {
 							__R30 |= VALVE3_MASK;
 						}
 						rc = strncmp((char*)payload, "valve3=off\r", len);
-						if(rc == 0){
+						if (rc == 0) {
 							__R30 &= ~VALVE3_MASK;
 						}
 
