@@ -258,6 +258,20 @@ void main() {
 						if (rc == 0) {
                                                   mode = DIAGNOSTIC;
 						}
+						if (mode == STOPPED) {
+							rc = strncmp((char*)payload, "start\r", len);
+							if (rc == 0) {
+								__R30 |= MOTOR_MASK;
+                                                                mode = RUNNING;
+							}
+                                                }
+						if (mode == RUNNING) {
+							rc = strncmp((char*)payload, "stop\r", len);
+							if (rc == 0) {
+								__R30 &= ~MOTOR_MASK;
+                                                                mode = STOPPED;
+							}
+                                                }
 						if (mode == DIAGNOSTIC) {
 							rc = strncmp((char*)payload, "motor=start\r", len);
 							if (rc == 0) {
