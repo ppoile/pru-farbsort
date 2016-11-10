@@ -204,10 +204,10 @@ void on_input_change(uint32_t mask, int value, int last_value)
       if (mode == RUNNING) {
         //schedule_pusher_action(now + 69, VALVE1_MASK, true);
         //schedule_pusher_action(now + 99, VALVE1_MASK, false);
-        schedule_pusher_action(now + 166, VALVE2_MASK, true);
-        schedule_pusher_action(now + 136, VALVE2_MASK, false);
-        //schedule_pusher_action(now + 274, VALVE3_MASK, true);
-        //schedule_pusher_action(now + 304, VALVE3_MASK, false);
+        //schedule_pusher_action(now + 166, VALVE2_MASK, true);
+        //schedule_pusher_action(now + 136, VALVE2_MASK, false);
+        schedule_pusher_action(now + 274, VALVE3_MASK, true);
+        schedule_pusher_action(now + 304, VALVE3_MASK, false);
       }
     }
     else {
