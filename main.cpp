@@ -91,7 +91,7 @@ static const uint32_t VALVE3_MASK = 0x20;
 static const uint32_t PULSECOUNTER_MASK = 0x8000;
 static const uint32_t LIGHTBARRIER1_MASK = 0x4000;
 static const uint32_t LIGHTBARRIER2_MASK = 0x10000;
-//static const uint32_t LIGHTBARRIERS3_TO_5_MASK = 0x4;
+static const uint32_t LIGHTBARRIERS3_TO_5_MASK = 0x4;
 
 struct pru_rpmsg_transport transport;
 uint16_t src=0xFFFF, dst=0xFFFF, len=0xFFFF;
@@ -110,6 +110,16 @@ int16_t post_event(void *event, uint16_t length)
 
 void on_input_change(uint32_t mask, int value, int last_value)
 {
+  if (mask == LIGHTBARRIERS3_TO_5_MASK) {
+    if (value) {
+      static const char emergency_stop_on[] = "emergency-stop=on\n";
+      post_event((void*)emergency_stop_on, 18);
+    }
+    else {
+      static const char emergency_stop_off[] = "emergency-stop=off\n";
+      post_event((void*)emergency_stop_off, 19);
+    }
+  }
   if (mask == PULSECOUNTER_MASK) {
     pulsecounter_last_change = timer_get_ticks();
     if (!conveyor_running) {
@@ -166,6 +176,7 @@ void process_inputs(uint32_t all_inputs_value)
   get_input(all_inputs_value, PULSECOUNTER_MASK);
   get_input(all_inputs_value, LIGHTBARRIER1_MASK);
   get_input(all_inputs_value, LIGHTBARRIER2_MASK);
+  get_input(all_inputs_value, LIGHTBARRIERS3_TO_5_MASK);
 
   last_all_inputs_value = all_inputs_value;
 }
