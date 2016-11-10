@@ -46,6 +46,8 @@ extern "C" {
 #include "resource_table_0.h"
 }
 
+#include "timer.h"
+
 
 volatile register uint32_t __R30;
 volatile register uint32_t __R31;
@@ -164,8 +166,6 @@ void main() {
 	/* allow OCP master port access by the PRU so the PRU can read external memories */
 	CT_CFG.SYSCFG_bit.STANDBY_INIT = 0;
 
-        //timer_start();
-
 	/* clear the status of event MB_INT_NUMBER (the mailbox event) and enable the mailbox event */
 	CT_INTC.SICR_bit.STS_CLR_IDX = MB_INT_NUMBER;
 	CT_MBX.IRQ[MB_USER].ENABLE_SET |= 1 << (MB_FROM_ARM_HOST * 2);
@@ -181,8 +181,12 @@ void main() {
 	pru_virtqueue_init(&transport.virtqueue1, &resourceTable.rpmsg_vring1, &CT_MBX.MESSAGE[MB_TO_ARM_HOST], &CT_MBX.MESSAGE[MB_FROM_ARM_HOST]);
 
 	/* Create the RPMsg channel between the PRU and ARM user space using the transport structure. */
-	while(pru_rpmsg_channel(RPMSG_NS_CREATE, &transport, CHAN_NAME, CHAN_DESC, CHAN_PORT) != PRU_RPMSG_SUCCESS);
-	while(1){
+	while (pru_rpmsg_channel(RPMSG_NS_CREATE, &transport, CHAN_NAME, CHAN_DESC, CHAN_PORT) != PRU_RPMSG_SUCCESS);
+
+        timer_start();
+
+	while (1) {
+		timer_poll();
 		/* Check bit 30 of register R31 to see if the mailbox interrupt has occurred */
 		if(__R31 & HOST_INT){
 			/* Clear the mailbox interrupt */
