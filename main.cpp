@@ -203,6 +203,9 @@ void main() {
 						if (len < RPMSG_BUF_SIZE) {
 							payload[len] = '\0';
 						}
+						rc = strncmp((char*)payload, "connect\r", len);
+						if (rc == 0) {
+						}
 						rc = strncmp((char*)payload, "motor=start\r", len);
 						if (rc == 0) {
 							__R30 |= MOTOR_MASK;
