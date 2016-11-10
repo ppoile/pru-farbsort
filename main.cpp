@@ -114,9 +114,25 @@ int16_t post_event(void *event, uint16_t length)
 }
 
 std::list<uint32_t> pusher_actions;
-void schedule_pusher(uint32_t timestamp)
+
+void schedule_pusher_action(uint32_t timestamp)
 {
   pusher_actions.push_back(timestamp);
+}
+
+void check_scheduled_pusher_actions()
+{
+  if (pusher_actions.size() == 0) {
+    return;
+  }
+  uint32_t next_action = pusher_actions.front();
+  if (now < next_action) {
+    return;
+  }
+  __R30 |= VALVE1_MASK;
+  pusher_actions.pop_front();
+  static const char scheduled_pusher_action_timeout[] = "scheduled-pusher-action: timeout\n";
+  post_event((void*)scheduled_pusher_action_timeout, 22);
 }
 
 void on_input_change(uint32_t mask, int value, int last_value)
@@ -163,7 +179,7 @@ void on_input_change(uint32_t mask, int value, int last_value)
     if (value) {
       static const char lightbarrier2_on[] = "lightbarrier2=on\n";
       post_event((void*)lightbarrier2_on, 17);
-      schedule_pusher(now + 69);
+      schedule_pusher_action(now + 69);
     }
     else {
       static const char lightbarrier2_off[] = "lightbarrier2=off\n";
@@ -325,5 +341,6 @@ void main() {
       }
     }
     process_inputs(__R31);
+    check_scheduled_pusher_actions();
   }
 }
