@@ -137,6 +137,7 @@ DirectMemory adcMemory(AdcBaseAddr);
 TiAdc adc(adcMemory);
 AdcMeasurement measurement(adc);
 uint32_t adc_last_measurement;
+uint32_t adc_min_value;
 
 
 int16_t post_event(void *event, uint16_t length)
@@ -212,34 +213,35 @@ void check_scheduled_adc_actions()
   }
   uint16_t value = measurement.read();
   adc_last_measurement = now;
-  char buffer[] = "ADC=0xXXXXXXXX (now=0xXXXXXXXX)\ncolor=XXXXX\n";
+  if (value < adc_min_value) {
+    adc_min_value = value;
+  }
+  char buffer[] = "ADC=0xXXXXXXXX (now=0xXXXXXXXX)\n";
   appendNumber(&buffer[6], (uint32_t)value);
   appendNumber(&buffer[22], (uint32_t)now);
-  if (now != next_action) {
-    post_event((void*)buffer, 32);
-    if (now >= next_action + 22) {
-      adc_actions.pop_front();
-    }
+  post_event((void*)buffer, 32);
+  if (now < next_action + 22) {
     return;
   }
+  adc_actions.pop_front();
   char *color;
   uint32_t color_length;
-  if (value >= ADC_NO_OBJECT_LIMIT) {
+  if (adc_min_value >= ADC_NO_OBJECT_LIMIT) {
     color = "?";
     color_length = 1;
   }
-  else if ((value <= ADC_BLUE_OBJECT_LIMIT + ADC_LIMIT_TOLERANCE) &&
-           (value >= ADC_BLUE_OBJECT_LIMIT)) {
+  else if ((adc_min_value <= ADC_BLUE_OBJECT_LIMIT + ADC_LIMIT_TOLERANCE) &&
+           (adc_min_value >= ADC_BLUE_OBJECT_LIMIT)) {
     color = "blue";
     color_length = 4;
   }
-  else if ((value <= ADC_RED_OBJECT_LIMIT + ADC_LIMIT_TOLERANCE) &&
-           (value >= ADC_RED_OBJECT_LIMIT)) {
+  else if ((adc_min_value <= ADC_RED_OBJECT_LIMIT + ADC_LIMIT_TOLERANCE) &&
+           (adc_min_value >= ADC_RED_OBJECT_LIMIT)) {
     color = "red";
     color_length = 3;
   }
-  else if ((value <= ADC_WHITE_OBJECT_LIMIT + ADC_LIMIT_TOLERANCE) &&
-           (value >= ADC_WHITE_OBJECT_LIMIT)) {
+  else if ((adc_min_value <= ADC_WHITE_OBJECT_LIMIT + ADC_LIMIT_TOLERANCE) &&
+           (adc_min_value >= ADC_WHITE_OBJECT_LIMIT)) {
     color = "white";
     color_length = 5;
   }
@@ -247,10 +249,12 @@ void check_scheduled_adc_actions()
     color = "?";
     color_length = 1;
   }
-  strcpy(&buffer[38], color);
-  buffer[38 + color_length] = '\n';
-  buffer[38 + color_length + 1] = '\0';
-  post_event((void*)buffer, 38 + color_length + 1);
+  strcpy(buffer, "color=");
+  strcpy(&buffer[6], color);
+  buffer[6 + color_length] = '\n';
+  buffer[6 + color_length + 1] = '\0';
+  post_event((void*)buffer, 6 + color_length + 1);
+  adc_min_value = 0xFFFF;
 }
 
 void on_input_change(uint32_t mask, int value, int last_value)
@@ -359,6 +363,7 @@ void main() {
   last_all_inputs_value = ~__R31;
   __R30 = 0;
   adc_last_measurement = 0;
+  adc_min_value = 0xFFFF;
 
   volatile uint8_t *status;
 
