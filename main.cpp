@@ -119,6 +119,7 @@ static const uint32_t LIGHTBARRIERS3_TO_5_MASK = 0x4;
 enum Mode { STOPPED, RUNNING, DIAGNOSTIC };
 
 Mode mode;
+bool rpmsg_connected;
 uint32_t pulsecounter_last_change;
 bool conveyor_running;
 struct pru_rpmsg_transport transport;
@@ -134,7 +135,7 @@ uint32_t adc_last_measurement;
 
 int16_t post_event(void *event, uint16_t length)
 {
-  if (src == 0xFFFF) {
+  if (!rpmsg_connected) {
     return -4; //RPMSG_NOT_CONNECTED
   }
   return pru_rpmsg_send(&transport, dst, src, event, length);
@@ -286,6 +287,7 @@ void process_inputs(uint32_t all_inputs_value)
 
 void main() {
   mode = DIAGNOSTIC;
+  rpmsg_connected = false;
   pulsecounter_last_change = 0;
   conveyor_running = false;
   src=0xFFFF;
@@ -338,12 +340,17 @@ void main() {
         if (CT_MBX.MESSAGE[MB_FROM_ARM_HOST] == 1) {
           /* Receive the message */
           if (pru_rpmsg_receive(&transport, &src, &dst, payload, &len) == PRU_RPMSG_SUCCESS) {
+            rpmsg_connected = true;
             int rc;
             if (len < RPMSG_BUF_SIZE) {
               payload[len] = '\0';
             }
             rc = strncmp((char*)payload, "connect\r", len);
             if (rc == 0) {
+            }
+            rc = strncmp((char*)payload, "disconnect\r", len);
+            if (rc == 0) {
+              rpmsg_connected = false;
             }
             rc = strncmp((char*)payload, "mode=stopped\r", len);
             if (rc == 0) {
