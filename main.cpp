@@ -116,6 +116,12 @@ static const uint32_t LIGHTBARRIER1_MASK = 0x4000;
 static const uint32_t LIGHTBARRIER2_MASK = 0x10000;
 static const uint32_t LIGHTBARRIERS3_TO_5_MASK = 0x4;
 
+static const uint32_t ADC_NO_OBJECT_LIMIT = 1214;
+static const uint32_t ADC_LIMIT_TOLERANCE = 40;
+static const uint32_t ADC_BLUE_OBJECT_LIMIT = 1182;
+static const uint32_t ADC_RED_OBJECT_LIMIT = 863;
+static const uint32_t ADC_WHITE_OBJECT_LIMIT = 811;
+
 enum Mode { STOPPED, RUNNING, DIAGNOSTIC };
 
 Mode mode;
@@ -158,21 +164,21 @@ void check_scheduled_pusher_actions()
   if (next_action.timestamp > now) {
     return;
   }
-  char timeout[] = "pusherX=Y (now=0xXXXXXXXX)\n";
+  char buffer[] = "pusherX=Y (now=0xXXXXXXXX)\n";
   if (next_action.bitmask == VALVE1_MASK) {
-    timeout[15] = '1';
+    buffer[6] = '1';
   }
   else if (next_action.bitmask == VALVE2_MASK) {
-    timeout[15] = '2';
+    buffer[6] = '2';
   }
   else if (next_action.bitmask == VALVE3_MASK) {
-    timeout[15] = '3';
+    buffer[6] = '3';
   }
   if (next_action.value) {
-    timeout[17] = '1';
+    buffer[8] = '1';
   }
   else {
-    timeout[17] = '0';
+    buffer[8] = '0';
   }
   appendNumber(&buffer[17], now);
   post_event((void*)buffer, 27);
@@ -197,15 +203,54 @@ void check_scheduled_adc_actions()
   if (adc_actions.size() == 0) {
     return;
   }
-  uint32_t &next_action = pusher_actions.front();
-  if (next_action > now) {
+  uint32_t &next_action = adc_actions.front();
+  if (now < next_action - 22) {
+    return;
+  }
+  if (now == adc_last_measurement) {
     return;
   }
   uint16_t value = measurement.read();
-  char buffer[] = "ADC=0xXXXXXXXX (now=0xXXXXXXXX)\n";
+  adc_last_measurement = now;
+  char buffer[] = "ADC=0xXXXXXXXX (now=0xXXXXXXXX)\ncolor=XXXXX\n";
   appendNumber(&buffer[6], (uint32_t)value);
   appendNumber(&buffer[22], (uint32_t)now);
-  post_event((void*)buffer, 32);
+  if (now != next_action) {
+    post_event((void*)buffer, 32);
+    if (now >= next_action + 22) {
+      adc_actions.pop_front();
+    }
+    return;
+  }
+  char *color;
+  uint32_t color_length;
+  if (value >= ADC_NO_OBJECT_LIMIT) {
+    color = "?";
+    color_length = 1;
+  }
+  else if ((value <= ADC_BLUE_OBJECT_LIMIT + ADC_LIMIT_TOLERANCE) &&
+           (value >= ADC_BLUE_OBJECT_LIMIT)) {
+    color = "blue";
+    color_length = 4;
+  }
+  else if ((value <= ADC_RED_OBJECT_LIMIT + ADC_LIMIT_TOLERANCE) &&
+           (value >= ADC_RED_OBJECT_LIMIT)) {
+    color = "red";
+    color_length = 3;
+  }
+  else if ((value <= ADC_WHITE_OBJECT_LIMIT + ADC_LIMIT_TOLERANCE) &&
+           (value >= ADC_WHITE_OBJECT_LIMIT)) {
+    color = "white";
+    color_length = 5;
+  }
+  else {
+    color = "?";
+    color_length = 1;
+  }
+  strcpy(&buffer[38], color);
+  buffer[38 + color_length] = '\n';
+  buffer[38 + color_length + 1] = '\0';
+  post_event((void*)buffer, 38 + color_length + 1);
 }
 
 void on_input_change(uint32_t mask, int value, int last_value)
@@ -240,31 +285,35 @@ void on_input_change(uint32_t mask, int value, int last_value)
   }
   if (mask == LIGHTBARRIER1_MASK) {
     if (value) {
-      static const char lightbarrier1_on[] = "lightbarrier1=on\n";
-      post_event((void*)lightbarrier1_on, 17);
+      char buffer[] = "lightbarrier1=on (now=0xXXXXXXXX)\n";
+      appendNumber(&buffer[24], now);
+      post_event((void*)buffer, 34);
     }
     else {
-      static const char lightbarrier1_off[] = "lightbarrier1=off\n";
-      post_event((void*)lightbarrier1_off, 18);
+      char buffer[] = "lightbarrier1=off (now=0xXXXXXXXX)\n";
+      appendNumber(&buffer[25], now);
+      post_event((void*)buffer, 35);
       schedule_adc_action(now + 111);
     }
   }
   if (mask == LIGHTBARRIER2_MASK) {
     if (value) {
-      static const char lightbarrier2_on[] = "lightbarrier2=on\n";
-      post_event((void*)lightbarrier2_on, 17);
+      char buffer[] = "lightbarrier2=on (now=0xXXXXXXXX)\n";
+      appendNumber(&buffer[24], now);
+      post_event((void*)buffer, 34);
       if (mode == RUNNING) {
         //schedule_pusher_action(now + 69, VALVE1_MASK, true);
         //schedule_pusher_action(now + 99, VALVE1_MASK, false);
         //schedule_pusher_action(now + 166, VALVE2_MASK, true);
         //schedule_pusher_action(now + 136, VALVE2_MASK, false);
-        schedule_pusher_action(now + 274, VALVE3_MASK, true);
-        schedule_pusher_action(now + 304, VALVE3_MASK, false);
+        //schedule_pusher_action(now + 274, VALVE3_MASK, true);
+        //schedule_pusher_action(now + 304, VALVE3_MASK, false);
       }
     }
     else {
-      static const char lightbarrier2_off[] = "lightbarrier2=off\n";
-      post_event((void*)lightbarrier2_off, 18);
+      char buffer[] = "lightbarrier2=off (now=0xXXXXXXXX)\n";
+      appendNumber(&buffer[25], now);
+      post_event((void*)buffer, 35);
     }
   }
 }
