@@ -116,11 +116,11 @@ static const uint32_t LIGHTBARRIER1_MASK = 0x4000;
 static const uint32_t LIGHTBARRIER2_MASK = 0x10000;
 static const uint32_t LIGHTBARRIERS3_TO_5_MASK = 0x4;
 
-static const uint32_t ADC_NO_OBJECT_LIMIT = 1214;
-static const uint32_t ADC_LIMIT_TOLERANCE = 40;
-static const uint32_t ADC_BLUE_OBJECT_LIMIT = 1182;
-static const uint32_t ADC_RED_OBJECT_LIMIT = 863;
-static const uint32_t ADC_WHITE_OBJECT_LIMIT = 811;
+static const uint32_t ADC_LIMIT_TOLERANCE = 60;
+static const uint32_t ADC_NO_OBJECT_LIMIT = 0x4be;
+static const uint32_t ADC_BLUE_OBJECT_LIMIT = 0x49a;
+static const uint32_t ADC_RED_OBJECT_LIMIT = 0x343;
+static const uint32_t ADC_WHITE_OBJECT_LIMIT = 0x307;
 
 enum Mode { STOPPED, RUNNING, DIAGNOSTIC };
 
