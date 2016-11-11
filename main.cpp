@@ -155,7 +155,7 @@ void check_scheduled_pusher_actions()
     return;
   }
   ScheduledOutputAction &next_action = pusher_actions.front();
-  if (now < next_action.timestamp) {
+  if (next_action.timestamp > now) {
     return;
   }
   char timeout[] = "timeout: pusherX=Y\n";
