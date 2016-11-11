@@ -51,9 +51,29 @@ extern "C" {
 #include "scheduled_output_action.h"
 #include "timer.h"
 
+#include "DirectMemory.h"
+#include "TiAdc.h"
+#include "AdcMeasurement.h"
+
 
 volatile register uint32_t __R30;
 volatile register uint32_t __R31;
+
+void appendNumber(char *buffer, uint32_t value)
+{
+  char *p = buffer;
+  for (int nibble_index = 7; nibble_index >= 0; --nibble_index) {
+    uint32_t nibble = (value >> (nibble_index * 4)) & 0xF;
+    char ch;
+    if (nibble <= 9) {
+      ch = '0' + nibble;
+    }
+    else {
+      ch = 'a' + nibble - 10;
+    }
+    *p++ = ch;
+  }
+}
 
 /* PRU0 is mailbox module user 1 */
 #define MB_USER						1
@@ -105,6 +125,12 @@ struct pru_rpmsg_transport transport;
 uint16_t src, dst, len;
 uint32_t now;
 uint32_t last_all_inputs_value;
+static uint32_t * const AdcBaseAddr = (uint32_t*)0x44E0D000;
+DirectMemory adcMemory(AdcBaseAddr);
+TiAdc adc(adcMemory);
+AdcMeasurement measurement(adc);
+uint32_t adc_last_measurement;
+
 
 int16_t post_event(void *event, uint16_t length)
 {
@@ -155,6 +181,18 @@ void check_scheduled_pusher_actions()
     __R30 &= ~next_action.bitmask;
   }
   pusher_actions.pop_front();
+}
+
+void schedule_adc_action()
+{
+  if (now - adc_last_measurement > 100) {
+    adc_last_measurement = now;
+    uint16_t value = measurement.read();
+    char buffer[32] = "ADC=0x";
+    appendNumber(&buffer[6], (uint32_t)value);
+    buffer[14] = '\n';
+    post_event((void*)buffer, 15);
+  }
 }
 
 void on_input_change(uint32_t mask, int value, int last_value)
@@ -256,6 +294,7 @@ void main() {
   now = 0;
   last_all_inputs_value = ~__R31;
   __R30 = 0;
+  adc_last_measurement = 0;
 
   volatile uint8_t *status;
 
@@ -371,5 +410,7 @@ void main() {
     }
     process_inputs(__R31);
     check_scheduled_pusher_actions();
+
+    schedule_adc_action();
   }
 }
