@@ -9,6 +9,9 @@ volatile register uint32_t __R31;
 
 
 namespace {
+  const uint32_t COUNTER_INCREMENTS_PER_SECOND_AT_200MHZ = 200e6;
+  const uint32_t TICKS_PER_SECOND = 100;
+
   uint32_t ticks = 0;
 }
 
@@ -27,7 +30,7 @@ void timer_start()
   CT_IEP.TMR_CMP_STS_bit.CMP_HIT = 0xFF;
 
   /* Set compare value */
-  CT_IEP.TMR_CMP0 = 200e6 / 100; // 10ms @ 200MHz
+  CT_IEP.TMR_CMP0 = COUNTER_INCREMENTS_PER_SECOND_AT_200MHZ / TICKS_PER_SECOND;
 
   /* Enable CMP0 and reset on event */
   CT_IEP.TMR_CMP_CFG_bit.CMP0_RST_CNT_EN = 1;
