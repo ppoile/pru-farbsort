@@ -158,7 +158,7 @@ void check_scheduled_pusher_actions()
   if (next_action.timestamp > now) {
     return;
   }
-  char timeout[] = "timeout: pusherX=Y\n";
+  char timeout[] = "pusherX=Y (now=0xXXXXXXXX)\n";
   if (next_action.bitmask == VALVE1_MASK) {
     timeout[15] = '1';
   }
@@ -174,7 +174,8 @@ void check_scheduled_pusher_actions()
   else {
     timeout[17] = '0';
   }
-  post_event((void*)timeout, 19);
+  appendNumber(&buffer[17], now);
+  post_event((void*)buffer, 27);
   if (next_action.value) {
     __R30 |= next_action.bitmask;
   }
@@ -184,16 +185,27 @@ void check_scheduled_pusher_actions()
   pusher_actions.pop_front();
 }
 
-void schedule_adc_action()
+std::list<uint32_t> adc_actions;
+
+void schedule_adc_action(uint32_t timestamp)
 {
-  if (now - adc_last_measurement > 1) {
-    adc_last_measurement = now;
-    uint16_t value = measurement.read();
-    char buffer[33] = "ADC=0xXXXXXXXX (now=0xXXXXXXXX)\n";
-    appendNumber(&buffer[6], (uint32_t)value);
-    appendNumber(&buffer[22], (uint32_t)now);
-    post_event((void*)buffer, 32);
+  adc_actions.push_back(timestamp);
+}
+
+void check_scheduled_adc_actions()
+{
+  if (adc_actions.size() == 0) {
+    return;
   }
+  uint32_t &next_action = pusher_actions.front();
+  if (next_action > now) {
+    return;
+  }
+  uint16_t value = measurement.read();
+  char buffer[] = "ADC=0xXXXXXXXX (now=0xXXXXXXXX)\n";
+  appendNumber(&buffer[6], (uint32_t)value);
+  appendNumber(&buffer[22], (uint32_t)now);
+  post_event((void*)buffer, 32);
 }
 
 void on_input_change(uint32_t mask, int value, int last_value)
@@ -234,6 +246,7 @@ void on_input_change(uint32_t mask, int value, int last_value)
     else {
       static const char lightbarrier1_off[] = "lightbarrier1=off\n";
       post_event((void*)lightbarrier1_off, 18);
+      schedule_adc_action(now + 111);
     }
   }
   if (mask == LIGHTBARRIER2_MASK) {
@@ -417,7 +430,6 @@ void main() {
     }
     process_inputs(__R31);
     check_scheduled_pusher_actions();
-
-    schedule_adc_action();
+    check_scheduled_adc_actions();
   }
 }
