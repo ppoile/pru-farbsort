@@ -26,7 +26,7 @@ TiAdc::TiAdc(MemoryMap &_reg) :
   reg.write(CTRL,                 6);
   reg.write(CTRL,                 7);
 
-  reg.write(STEPCONFIG1, 0x04280008);
+  reg.write(STEPCONFIG1, 0x04000008);
   reg.write(STEPDELAY1,  0x0f000098);
 
   reg.write(FIFO1THRESHOLD, 20-1);
