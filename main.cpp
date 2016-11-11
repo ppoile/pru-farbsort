@@ -186,7 +186,7 @@ void check_scheduled_pusher_actions()
 
 void schedule_adc_action()
 {
-  if (now - adc_last_measurement > 100) {
+  if (now - adc_last_measurement > 1) {
     adc_last_measurement = now;
     uint16_t value = measurement.read();
     char buffer[33] = "ADC=0xXXXXXXXX (now=0xXXXXXXXX)\n";
