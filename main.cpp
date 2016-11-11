@@ -189,10 +189,10 @@ void schedule_adc_action()
   if (now - adc_last_measurement > 100) {
     adc_last_measurement = now;
     uint16_t value = measurement.read();
-    char buffer[32] = "ADC=0x";
+    char buffer[33] = "ADC=0xXXXXXXXX (now=0xXXXXXXXX)\n";
     appendNumber(&buffer[6], (uint32_t)value);
-    buffer[14] = '\n';
-    post_event((void*)buffer, 15);
+    appendNumber(&buffer[22], (uint32_t)now);
+    post_event((void*)buffer, 32);
   }
 }
 
