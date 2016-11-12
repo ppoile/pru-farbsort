@@ -321,8 +321,8 @@ void on_input_change(uint32_t mask, int value, int last_value)
       appendNumber(&buffer[24], now);
       post_event((void*)buffer, 34);
       if (mode == RUNNING) {
-        //schedule_pusher_action(now + 69, VALVE1_MASK, true);
-        //schedule_pusher_action(now + 99, VALVE1_MASK, false);
+        schedule_pusher_action(now + 69, VALVE1_MASK, true);
+        schedule_pusher_action(now + 99, VALVE1_MASK, false);
         //schedule_pusher_action(now + 166, VALVE2_MASK, true);
         //schedule_pusher_action(now + 196, VALVE2_MASK, false);
         //schedule_pusher_action(now + 274, VALVE3_MASK, true);
