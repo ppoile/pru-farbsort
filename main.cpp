@@ -417,6 +417,10 @@ void main() {
             }
             rc = strncmp((char*)payload, "disconnect\r", len);
             if (rc == 0) {
+              __R30 &= ~MOTOR_MASK;
+              __R30 &= ~VALVE1_MASK;
+              __R30 &= ~VALVE2_MASK;
+              __R30 &= ~VALVE3_MASK;
               rpmsg_connected = false;
             }
             rc = strncmp((char*)payload, "mode=stopped\r", len);
