@@ -360,7 +360,7 @@ void main() {
   dst=0xFFFF;
   len=0xFFFF;
   now = 0;
-  last_all_inputs_value = ~__R31;
+  last_all_inputs_value = __R31;
   __R30 = 0;
   adc_last_measurement = 0;
   adc_min_value = 0xFFFF;
