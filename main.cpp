@@ -138,6 +138,8 @@ TiAdc adc(adcMemory);
 AdcMeasurement measurement(adc);
 uint32_t adc_last_measurement;
 uint32_t adc_min_value;
+uint32_t lightbarrier1_last_change;
+uint32_t lightbarrier2_last_change;
 
 
 int16_t post_event(void *event, uint16_t length)
@@ -288,6 +290,10 @@ void on_input_change(uint32_t mask, int value, int last_value)
     }
   }
   if (mask == LIGHTBARRIER1_MASK) {
+    if (now - lightbarrier1_last_change < 5) {
+      return;
+    }
+    lightbarrier1_last_change = now;
     if (value) {
       char buffer[] = "lightbarrier1=on (now=0xXXXXXXXX)\n";
       appendNumber(&buffer[24], now);
@@ -301,6 +307,10 @@ void on_input_change(uint32_t mask, int value, int last_value)
     }
   }
   if (mask == LIGHTBARRIER2_MASK) {
+    if (now - lightbarrier2_last_change < 5) {
+      return;
+    }
+    lightbarrier2_last_change = now;
     if (value) {
       char buffer[] = "lightbarrier2=on (now=0xXXXXXXXX)\n";
       appendNumber(&buffer[24], now);
@@ -364,6 +374,8 @@ void main() {
   __R30 = 0;
   adc_last_measurement = 0;
   adc_min_value = 0xFFFF;
+  lightbarrier1_last_change = 0;
+  lightbarrier2_last_change = 0;
 
   volatile uint8_t *status;
 
