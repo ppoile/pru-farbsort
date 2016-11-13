@@ -333,7 +333,7 @@ void on_input_change(uint32_t mask, int value, int last_value)
       post_event((void*)buffer, 34);
       if (mode == RUNNING) {
         if (detected_colors.size() == 0) {
-          post_event((void*)"debug: no colored object detected\n", 34);
+          post_event((void*)"debug: No colored object detected. Letting it pass...\n", 54);
           return;
         }
         Color color = detected_colors.front();
