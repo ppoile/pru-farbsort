@@ -221,10 +221,10 @@ void check_scheduled_adc_actions()
   if (value < adc_min_value) {
     adc_min_value = value;
   }
-  char buffer[] = "ADC=0xXXXXXXXX (now=0xXXXXXXXX)\n";
-  appendNumber(&buffer[6], (uint32_t)value);
-  appendNumber(&buffer[22], (uint32_t)now);
-  post_event((void*)buffer, 32);
+  char buffer[] = "debug: ADC=0xXXXXXXXX (now=0xXXXXXXXX)\n";
+  appendNumber(&buffer[13], (uint32_t)value);
+  appendNumber(&buffer[29], (uint32_t)now);
+  post_event((void*)buffer, 39);
   if (now < next_action + 22) {
     return;
   }
