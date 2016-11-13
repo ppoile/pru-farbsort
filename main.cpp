@@ -283,7 +283,7 @@ void on_input_change(uint32_t mask, int value, int last_value)
         __R30 &= ~MOTOR_MASK;
         mode=STOPPED;
         static const char emergency_motor_stop[] = "mode=stopped (emergency-stop)\n";
-        post_event((void*)emergency_motor_stop, 28);
+        post_event((void*)emergency_motor_stop, 30);
       }
     }
     else {
