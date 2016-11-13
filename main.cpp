@@ -142,6 +142,8 @@ uint32_t lightbarrier1_last_change;
 uint32_t lightbarrier2_last_change;
 uint32_t lightbarrier3_to_5_last_change;
 
+enum Color { BLUE, RED, WHITE, UNKNOWN };
+std::list<Color> detected_colors;
 
 int16_t post_event(void *event, uint16_t length)
 {
@@ -227,35 +229,44 @@ void check_scheduled_adc_actions()
     return;
   }
   adc_actions.pop_front();
-  char *color;
+  Color color;
+  char *color_string;
   uint32_t color_length;
   if (adc_min_value >= ADC_NO_OBJECT_LIMIT) {
-    color = "?";
+    color = UNKNOWN;
+    color_string = "?";
     color_length = 1;
   }
   else if ((adc_min_value <= ADC_BLUE_OBJECT_LIMIT + ADC_LIMIT_TOLERANCE) &&
            (adc_min_value >= ADC_BLUE_OBJECT_LIMIT)) {
-    color = "blue";
+    color = BLUE;
+    color_string = "blue";
     color_length = 4;
   }
   else if ((adc_min_value <= ADC_RED_OBJECT_LIMIT + ADC_LIMIT_TOLERANCE) &&
            (adc_min_value >= ADC_RED_OBJECT_LIMIT)) {
-    color = "red";
+    color = RED;
+    color_string = "red";
     color_length = 3;
   }
   else if ((adc_min_value <= ADC_WHITE_OBJECT_LIMIT + ADC_LIMIT_TOLERANCE) &&
            (adc_min_value >= ADC_WHITE_OBJECT_LIMIT)) {
-    color = "white";
+    color = WHITE;
+    color_string = "white";
     color_length = 5;
   }
   else {
-    color = "?";
+    color = UNKNOWN;
+    color_string = "?";
     color_length = 1;
   }
   strcpy(buffer, "color=");
-  strcpy(&buffer[6], color);
+  strcpy(&buffer[6], color_string);
   buffer[6 + color_length] = '\n';
   buffer[6 + color_length + 1] = '\0';
+  if (mode == RUNNING) {
+    detected_colors.push_back(color);
+  }
   post_event((void*)buffer, 6 + color_length + 1);
   adc_min_value = 0xFFFF;
 }
@@ -321,12 +332,29 @@ void on_input_change(uint32_t mask, int value, int last_value)
       appendNumber(&buffer[24], now);
       post_event((void*)buffer, 34);
       if (mode == RUNNING) {
-        schedule_pusher_action(now + 69, VALVE1_MASK, true);
-        schedule_pusher_action(now + 99, VALVE1_MASK, false);
-        schedule_pusher_action(now + 166, VALVE2_MASK, true);
-        schedule_pusher_action(now + 196, VALVE2_MASK, false);
-        schedule_pusher_action(now + 274, VALVE3_MASK, true);
-        schedule_pusher_action(now + 304, VALVE3_MASK, false);
+        if (detected_colors.size() == 0) {
+          post_event((void*)"debug: no colored object detected\n", 34);
+          return;
+        }
+        Color color = detected_colors.front();
+        detected_colors.pop_front();
+        switch (color) {
+          case BLUE:
+            schedule_pusher_action(now + 69, VALVE1_MASK, true);
+            schedule_pusher_action(now + 99, VALVE1_MASK, false);
+            break;
+          case RED:
+            schedule_pusher_action(now + 166, VALVE2_MASK, true);
+            schedule_pusher_action(now + 196, VALVE2_MASK, false);
+            break;
+          case WHITE:
+            schedule_pusher_action(now + 274, VALVE3_MASK, true);
+            schedule_pusher_action(now + 304, VALVE3_MASK, false);
+            break;
+          case UNKNOWN:
+          default:
+            break;
+        }
       }
     }
     else {
