@@ -140,7 +140,7 @@ uint32_t adc_last_measurement;
 uint32_t adc_min_value;
 uint32_t lightbarrier1_last_change;
 uint32_t lightbarrier2_last_change;
-uint32_t lightbarrier3_to_5_last_change;
+uint32_t lightbarriers3_to_5_last_change;
 
 enum Color { BLUE, RED, WHITE, UNKNOWN };
 std::list<Color> detected_colors;
@@ -286,10 +286,10 @@ void check_scheduled_adc_actions()
 void on_input_change(uint32_t mask, int value, int last_value)
 {
   if (mask == LIGHTBARRIERS3_TO_5_MASK) {
-    if (now - lightbarrier3_to_5_last_change < 5) {
+    if (now - lightbarriers3_to_5_last_change < 5) {
       return;
     }
-    lightbarrier3_to_5_last_change = now;
+    lightbarriers3_to_5_last_change = now;
     if (mode==RUNNING) {
       if (value) {
         __R30 &= ~MOTOR_MASK;
@@ -425,7 +425,7 @@ void main() {
   adc_min_value = 0xFFFF;
   lightbarrier1_last_change = 0;
   lightbarrier2_last_change = 0;
-  lightbarrier3_to_5_last_change = 0;
+  lightbarriers3_to_5_last_change = 0;
 
   volatile uint8_t *status;
 
