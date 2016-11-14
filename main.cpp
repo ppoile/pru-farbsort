@@ -365,22 +365,21 @@ void on_input_change(uint32_t mask, int value, int last_value)
   }
 }
 
-uint32_t get_input(uint32_t all_inputs_value, uint32_t mask)
+void process_input(uint32_t all_inputs_value, uint32_t mask)
 {
   bool value = !(!(all_inputs_value & mask));
   bool last_value = !(!(last_all_inputs_value & mask));
   if (value != last_value) {
     on_input_change(mask, value, last_value);
   }
-  return value;
 }
 
 void process_inputs(uint32_t all_inputs_value)
 {
-  get_input(all_inputs_value, LIGHTBARRIERS3_TO_5_MASK);
-  get_input(all_inputs_value, PULSECOUNTER_MASK);
-  get_input(all_inputs_value, LIGHTBARRIER1_MASK);
-  get_input(all_inputs_value, LIGHTBARRIER2_MASK);
+  process_input(all_inputs_value, LIGHTBARRIERS3_TO_5_MASK);
+  process_input(all_inputs_value, PULSECOUNTER_MASK);
+  process_input(all_inputs_value, LIGHTBARRIER1_MASK);
+  process_input(all_inputs_value, LIGHTBARRIER2_MASK);
 
   if (conveyor_running) {
     int32_t ticks_since_last_change = now - pulsecounter_last_change;
