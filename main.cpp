@@ -115,6 +115,10 @@ static const uint32_t PULSECOUNTER_MASK = 0x8000;
 static const uint32_t LIGHTBARRIER1_MASK = 0x4000;
 static const uint32_t LIGHTBARRIER2_MASK = 0x10000;
 static const uint32_t LIGHTBARRIERS3_TO_5_MASK = 0x4;
+static const char lightbarrier1_on[] = "lightbarrier1=on\n";
+static const char lightbarrier1_off[] = "lightbarrier1=off\n";
+static const char lightbarrier2_on[] = "lightbarrier2=on\n";
+static const char lightbarrier2_off[] = "lightbarrier2=off\n";
 
 static const uint32_t ADC_LIMIT_TOLERANCE = 60;
 static const uint32_t ADC_NO_OBJECT_LIMIT = 0x4be;
@@ -124,10 +128,13 @@ static const uint32_t ADC_WHITE_OBJECT_LIMIT = 0x307;
 
 enum Mode { STOPPED, RUNNING, DIAGNOSTIC };
 
+static const char conveyor_running[] = "conveyor=running\n";
+static const char conveyor_stopped[] = "conveyor=stopped\n";
+
 Mode mode;
 bool rpmsg_connected;
 uint32_t pulsecounter_last_change;
-bool conveyor_running;
+bool is_conveyor_running;
 struct pru_rpmsg_transport transport;
 uint16_t src, dst, len;
 uint32_t now;
@@ -311,10 +318,9 @@ void on_input_change(uint32_t mask, int value, int last_value)
   }
   if (mask == PULSECOUNTER_MASK) {
     pulsecounter_last_change = timer_get_ticks();
-    if (!conveyor_running) {
-      conveyor_running = true;
-      static const char conveyor_running[] = "conveyor=running\n";
-      post_event((void*)conveyor_running, 17);
+    if (!is_conveyor_running) {
+      is_conveyor_running = true;
+      post_event(conveyor_running, 17);
     }
   }
   if (mask == LIGHTBARRIER1_MASK) {
@@ -323,14 +329,10 @@ void on_input_change(uint32_t mask, int value, int last_value)
     }
     lightbarrier1_last_change = now;
     if (value) {
-      char buffer[] = "lightbarrier1=on (now=0xXXXXXXXX)\n";
-      appendNumber(&buffer[24], now);
-      post_event((void*)buffer, 34);
+      post_event(lightbarrier1_on, 17);
     }
     else {
-      char buffer[] = "lightbarrier1=off (now=0xXXXXXXXX)\n";
-      appendNumber(&buffer[25], now);
-      post_event((void*)buffer, 35);
+      post_event(lightbarrier1_off, 18);
       schedule_adc_action(now + 111);
     }
   }
@@ -340,9 +342,7 @@ void on_input_change(uint32_t mask, int value, int last_value)
     }
     lightbarrier2_last_change = now;
     if (value) {
-      char buffer[] = "lightbarrier2=on (now=0xXXXXXXXX)\n";
-      appendNumber(&buffer[24], now);
-      post_event((void*)buffer, 34);
+      post_event(lightbarrier2_on, 17);
       if (mode == RUNNING) {
         if (detected_colors.size() == 0) {
           post_event((void*)"debug: No colored object detected. Letting it pass...\n", 54);
@@ -370,9 +370,7 @@ void on_input_change(uint32_t mask, int value, int last_value)
       }
     }
     else {
-      char buffer[] = "lightbarrier2=off (now=0xXXXXXXXX)\n";
-      appendNumber(&buffer[25], now);
-      post_event((void*)buffer, 35);
+      post_event(lightbarrier2_off, 18);
     }
   }
 }
@@ -393,12 +391,11 @@ void process_inputs(uint32_t all_inputs_value)
   process_input(all_inputs_value, LIGHTBARRIER1_MASK);
   process_input(all_inputs_value, LIGHTBARRIER2_MASK);
 
-  if (conveyor_running) {
+  if (is_conveyor_running) {
     int32_t ticks_since_last_change = now - pulsecounter_last_change;
     if (ticks_since_last_change > 100) {
-      conveyor_running = false;
-      static const char conveyor_stopped[] = "conveyor=stopped\n";
-      post_event((void*)conveyor_stopped, 17);
+      is_conveyor_running = false;
+      post_event(conveyor_stopped, 17);
     }
   }
 
@@ -414,7 +411,7 @@ void main() {
   mode = DIAGNOSTIC;
   rpmsg_connected = false;
   pulsecounter_last_change = 0;
-  conveyor_running = false;
+  is_conveyor_running = false;
   src=0xFFFF;
   dst=0xFFFF;
   len=0xFFFF;
@@ -476,6 +473,26 @@ void main() {
             }
             rc = strncmp((char*)payload, "connect\r", len);
             if (rc == 0) {
+              bool value = get_last_input(LIGHTBARRIER1_MASK);
+              if (value) {
+                post_event(lightbarrier1_on, 17);
+              }
+              else {
+                post_event(lightbarrier1_off, 18);
+              }
+              value = get_last_input(LIGHTBARRIER2_MASK);
+              if (value) {
+                post_event(lightbarrier2_on, 17);
+              }
+              else {
+                post_event(lightbarrier2_off, 18);
+              }
+              if (is_conveyor_running) {
+                post_event(conveyor_running, 17);
+              }
+              else {
+                post_event(conveyor_stopped, 17);
+              }
             }
             rc = strncmp((char*)payload, "disconnect\r", len);
             if (rc == 0) {
