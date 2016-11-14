@@ -152,12 +152,12 @@ uint32_t lightbarriers3_to_5_last_change;
 enum Color { BLUE, RED, WHITE, UNKNOWN };
 std::list<Color> detected_colors;
 
-int16_t post_event(void *event, uint16_t length)
+int16_t post_event(char const *event, uint16_t length)
 {
   if (!rpmsg_connected) {
     return -4; //RPMSG_NOT_CONNECTED
   }
-  return pru_rpmsg_send(&transport, dst, src, event, length);
+  return pru_rpmsg_send(&transport, dst, src, (void*)event, length);
 }
 
 std::list<ScheduledOutputAction> pusher_actions;
@@ -206,7 +206,7 @@ void check_scheduled_pusher_actions()
   length += 8;
   strcpy(&buffer[length], ")\n");
   length += 2;
-  post_event((void*)buffer, length);
+  post_event(buffer, length);
   if (next_action.value) {
     __R30 |= next_action.bitmask;
   }
@@ -243,7 +243,7 @@ void check_scheduled_adc_actions()
   char buffer[] = "debug: ADC=0xXXXXXXXX (now=0xXXXXXXXX)\n";
   appendNumber(&buffer[13], (uint32_t)value);
   appendNumber(&buffer[29], (uint32_t)now);
-  post_event((void*)buffer, 39);
+  post_event(buffer, 39);
   if (now < next_action + 22) {
     return;
   }
@@ -286,7 +286,7 @@ void check_scheduled_adc_actions()
   if (mode == RUNNING) {
     detected_colors.push_back(color);
   }
-  post_event((void*)buffer, 6 + color_length + 1);
+  post_event(buffer, 6 + color_length + 1);
   adc_min_value = 0xFFFF;
 }
 
@@ -302,17 +302,17 @@ void on_input_change(uint32_t mask, int value, int last_value)
         __R30 &= ~MOTOR_MASK;
         mode=STOPPED;
         static const char emergency_motor_stop[] = "mode=stopped (emergency-stop)\n";
-        post_event((void*)emergency_motor_stop, 30);
+        post_event(emergency_motor_stop, 30);
       }
     }
     else {
       if (value) {
         static const char emergency_stop_on[] = "emergency-stop=on\n";
-        post_event((void*)emergency_stop_on, 18);
+        post_event(emergency_stop_on, 18);
       }
       else {
         static const char emergency_stop_off[] = "emergency-stop=off\n";
-        post_event((void*)emergency_stop_off, 19);
+        post_event(emergency_stop_off, 19);
       }
     }
   }
@@ -345,7 +345,7 @@ void on_input_change(uint32_t mask, int value, int last_value)
       post_event(lightbarrier2_on, 17);
       if (mode == RUNNING) {
         if (detected_colors.size() == 0) {
-          post_event((void*)"debug: No colored object detected. Letting it pass...\n", 54);
+          post_event("debug: No colored object detected. Letting it pass...\n", 54);
           return;
         }
         Color color = detected_colors.front();
@@ -514,7 +514,7 @@ void main() {
               rc = strncmp((char*)payload, "start\r", len);
               if (rc == 0) {
                 if (get_last_input(LIGHTBARRIERS3_TO_5_MASK)) {
-                  post_event((void*)"log: start prevented because 'lightbarriers3_to_5=on'\n", 54);
+                  post_event("log: start prevented because 'lightbarriers3_to_5=on'\n", 54);
                 }
                 else {
                   __R30 |= MOTOR_MASK;
