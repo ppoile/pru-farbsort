@@ -170,24 +170,36 @@ void check_scheduled_pusher_actions()
   if (next_action.timestamp > now) {
     return;
   }
-  char buffer[] = "pusherX=Y (now=0xXXXXXXXX)\n";
+  char buffer[29] = "valve";
+  uint32_t length = 5;
+  buffer[length] = 'X';
   if (next_action.bitmask == VALVE1_MASK) {
-    buffer[6] = '1';
+    buffer[length] = '1';
   }
   else if (next_action.bitmask == VALVE2_MASK) {
-    buffer[6] = '2';
+    buffer[length] = '2';
   }
   else if (next_action.bitmask == VALVE3_MASK) {
-    buffer[6] = '3';
+    buffer[length] = '3';
   }
+  length += 1;
+  buffer[length] = '=';
+  length += 1;
   if (next_action.value) {
-    buffer[8] = '1';
+    strcpy(&buffer[length], "on");
+    length += 2;
   }
   else {
-    buffer[8] = '0';
+    strcpy(&buffer[length], "off");
+    length += 3;
   }
-  appendNumber(&buffer[17], now);
-  post_event((void*)buffer, 27);
+  strcpy(&buffer[length], " (now=0x");
+  length += 8;
+  appendNumber(&buffer[length], now);
+  length += 8;
+  strcpy(&buffer[length], ")\n");
+  length += 2;
+  post_event((void*)buffer, length);
   if (next_action.value) {
     __R30 |= next_action.bitmask;
   }
