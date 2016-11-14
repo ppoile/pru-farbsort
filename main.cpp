@@ -393,6 +393,11 @@ void process_inputs(uint32_t all_inputs_value)
   last_all_inputs_value = all_inputs_value;
 }
 
+bool get_last_input(uint32_t mask)
+{
+  return !(!(last_all_inputs_value & mask));
+}
+
 void main() {
   mode = DIAGNOSTIC;
   rpmsg_connected = false;
@@ -479,8 +484,13 @@ void main() {
             if (mode == STOPPED) {
               rc = strncmp((char*)payload, "start\r", len);
               if (rc == 0) {
-                __R30 |= MOTOR_MASK;
-                mode = RUNNING;
+                if (get_last_input(LIGHTBARRIERS3_TO_5_MASK)) {
+                  post_event((void*)"log: start prevented because 'lightbarriers3_to_5=on'\n", 54);
+                }
+                else {
+                  __R30 |= MOTOR_MASK;
+                  mode = RUNNING;
+                }
               }
             }
             if (mode == RUNNING) {
