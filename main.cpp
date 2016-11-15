@@ -110,7 +110,6 @@ static const uint32_t MOTOR_MASK = 0x8000;
 static const uint32_t VALVE1_MASK = 0x4000;
 static const uint32_t VALVE2_MASK = 0x80;
 static const uint32_t VALVE3_MASK = 0x20;
-static const char motor_start[] = "motor=start\n";
 static const char motor_stop[] = "motor=stop\n";
 static const char valve1_off[] = "valve1=off\n";
 static const char valve2_off[] = "valve2=off\n";
@@ -133,15 +132,16 @@ static const uint32_t ADC_BLUE_OBJECT_LIMIT = 0x49a;
 static const uint32_t ADC_RED_OBJECT_LIMIT = 0x343;
 static const uint32_t ADC_WHITE_OBJECT_LIMIT = 0x307;
 
-enum Mode { NORMAL_STOPPED, NORMAL_RUNNING, DIAGNOSTIC };
+enum Mode { MODE_NORMAL, MODE_DIAGNOSTIC };
 
-static const char mode_normal_stopped[] = "mode=stopped\n";
-static const char mode_normal_started[] = "mode=started\n";
-static const char mode_diagnostic[] = "mode=diagnostic\n";
+static const char mode_normal[] = "mode=normal\n";
+static const char controller_stop[] = "controller=stop\n";
+static const char controller_start[] = "controller=start\n";
 static const char conveyor_running[] = "conveyor=running\n";
 static const char conveyor_stopped[] = "conveyor=stopped\n";
 
 Mode mode;
+bool controller_started;
 bool rpmsg_connected;
 uint32_t pulsecounter_last_change;
 bool is_conveyor_running;
@@ -288,7 +288,7 @@ void check_scheduled_adc_actions()
   char buffer[] = "color=";
   strcpy(&buffer[6], color_string);
   buffer[6 + color_length] = '\n';
-  if (mode == NORMAL_RUNNING && color != UNKNOWN) {
+  if (controller_started && color != UNKNOWN) {
     detected_colors.push_back(color);
   }
   post_event(buffer, 6 + color_length + 1);
@@ -302,12 +302,12 @@ void on_input_change(uint32_t mask, int value, int last_value)
       return;
     }
     lightbarriers3_to_5_last_change = now;
-    if (mode==NORMAL_RUNNING) {
+    if (controller_started) {
       if (value) {
         __R30 &= ~MOTOR_MASK;
-        mode=NORMAL_STOPPED;
-        static const char emergency_motor_stop[] = "mode=normal-stopped (emergency-stop)\n";
-        post_event(emergency_motor_stop, 30);
+        controller_started = false;
+        post_event(controller_stop, 16);
+        //post_event("log: emergency-stop!\n", 21);
       }
     }
     else {
@@ -346,7 +346,7 @@ void on_input_change(uint32_t mask, int value, int last_value)
     lightbarrier2_last_change = now;
     if (value) {
       post_event(lightbarrier2_on, 17);
-      if (mode == NORMAL_RUNNING) {
+      if (controller_started) {
         if (detected_colors.size() == 0) {
           post_event("debug: No colored object detected. Letting it pass...\n", 54);
           return;
@@ -411,7 +411,8 @@ bool get_last_input(uint32_t mask)
 }
 
 void main() {
-  mode = DIAGNOSTIC;
+  mode = MODE_NORMAL;
+  controller_started = false;
   rpmsg_connected = false;
   pulsecounter_last_change = 0;
   is_conveyor_running = false;
@@ -481,7 +482,8 @@ void main() {
               post_event(valve1_off, 11);
               post_event(valve2_off, 11);
               post_event(valve3_off, 11);
-              post_event(mode_diagnostic, 16);
+              post_event(mode_normal, 12);
+              post_event(controller_stop, 16);
               if (is_conveyor_running) {
                 post_event(conveyor_running, 17);
               }
@@ -513,41 +515,58 @@ void main() {
               __R30 &= ~VALVE1_MASK;
               __R30 &= ~VALVE2_MASK;
               __R30 &= ~VALVE3_MASK;
+              mode = MODE_NORMAL;
+              controller_started = false;
               rpmsg_connected = false;
             }
-            rc = strncmp((char*)payload, "mode=stopped\r", len);
+            rc = strncmp((char*)payload, "mode=normal\r", len);
             if (rc == 0) {
-              mode = NORMAL_STOPPED;
+              if (mode == MODE_DIAGNOSTIC) {
+                __R30 &= ~MOTOR_MASK;
+                __R30 &= ~VALVE1_MASK;
+                post_event(valve1_off, 11);
+                __R30 &= ~VALVE2_MASK;
+                post_event(valve2_off, 11);
+                __R30 &= ~VALVE3_MASK;
+                post_event(valve3_off, 11);
+                mode = MODE_NORMAL;
+                post_event(mode_normal, 12);
+                controller_started = false;
+                post_event(controller_stop, 16);
+              }
             }
             rc = strncmp((char*)payload, "mode=diagnostic\r", len);
             if (rc == 0) {
-              mode = DIAGNOSTIC;
+              if (controller_started) {
+                __R30 &= ~MOTOR_MASK;
+                controller_started = false;
+                post_event(controller_stop, 16);
+              }
+              mode = MODE_DIAGNOSTIC;
             }
-            if (mode == NORMAL_STOPPED) {
+            if (mode == MODE_NORMAL && !controller_started) {
               rc = strncmp((char*)payload, "start\r", len);
               if (rc == 0) {
                 if (get_last_input(LIGHTBARRIERS3_TO_5_MASK)) {
                   skip_echo = true;
-                  post_event("log: start prevented because 'lightbarriers3_to_5=on'\n", 54);
+                  //post_event("log: 'lightbarriers3_to_5=on' prevented start\n", 54);
                 }
                 else {
                   __R30 |= MOTOR_MASK;
-                  mode = NORMAL_RUNNING;
-                  post_event(motor_start, 12);
-                  post_event(mode_normal_started, 13);
+                  controller_started = true;
+                  post_event(controller_start, 17);
                 }
               }
             }
-            if (mode == NORMAL_RUNNING) {
+            if (controller_started) {
               rc = strncmp((char*)payload, "stop\r", len);
               if (rc == 0) {
                 __R30 &= ~MOTOR_MASK;
-                mode = NORMAL_STOPPED;
-                post_event(motor_stop, 11);
-                post_event(mode_normal_stopped, 13);
+                controller_started = false;
+                post_event(controller_stop, 16);
               }
             }
-            if (mode == DIAGNOSTIC) {
+            if (mode == MODE_DIAGNOSTIC) {
               rc = strncmp((char*)payload, "motor=start\r", len);
               if (rc == 0) {
                 __R30 |= MOTOR_MASK;
