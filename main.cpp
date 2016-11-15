@@ -110,6 +110,11 @@ static const uint32_t MOTOR_MASK = 0x8000;
 static const uint32_t VALVE1_MASK = 0x4000;
 static const uint32_t VALVE2_MASK = 0x80;
 static const uint32_t VALVE3_MASK = 0x20;
+static const char motor_start[] = "motor=start\n";
+static const char motor_stop[] = "motor=stop\n";
+static const char valve1_off[] = "valve1=off\n";
+static const char valve2_off[] = "valve2=off\n";
+static const char valve3_off[] = "valve3=off\n";
 
 static const uint32_t PULSECOUNTER_MASK = 0x8000;
 static const uint32_t LIGHTBARRIER1_MASK = 0x4000;
@@ -119,6 +124,8 @@ static const char lightbarrier1_on[] = "lightbarrier1=on\n";
 static const char lightbarrier1_off[] = "lightbarrier1=off\n";
 static const char lightbarrier2_on[] = "lightbarrier2=on\n";
 static const char lightbarrier2_off[] = "lightbarrier2=off\n";
+static const char emergency_stop_on[] = "emergency-stop=on\n";
+static const char emergency_stop_off[] = "emergency-stop=off\n";
 
 static const uint32_t ADC_LIMIT_TOLERANCE = 60;
 static const uint32_t ADC_NO_OBJECT_LIMIT = 0x4be;
@@ -126,8 +133,11 @@ static const uint32_t ADC_BLUE_OBJECT_LIMIT = 0x49a;
 static const uint32_t ADC_RED_OBJECT_LIMIT = 0x343;
 static const uint32_t ADC_WHITE_OBJECT_LIMIT = 0x307;
 
-enum Mode { STOPPED, RUNNING, DIAGNOSTIC };
+enum Mode { NORMAL_STOPPED, NORMAL_RUNNING, DIAGNOSTIC };
 
+static const char mode_normal_stopped[] = "mode=stopped\n";
+static const char mode_normal_started[] = "mode=started\n";
+static const char mode_diagnostic[] = "mode=diagnostic\n";
 static const char conveyor_running[] = "conveyor=running\n";
 static const char conveyor_stopped[] = "conveyor=stopped\n";
 
@@ -240,10 +250,6 @@ void check_scheduled_adc_actions()
   if (value < adc_min_value) {
     adc_min_value = value;
   }
-  char buffer[] = "debug: ADC=0xXXXXXXXX (now=0xXXXXXXXX)\n";
-  appendNumber(&buffer[13], (uint32_t)value);
-  appendNumber(&buffer[29], (uint32_t)now);
-  post_event(buffer, 39);
   if (now < next_action + 22) {
     return;
   }
@@ -279,11 +285,10 @@ void check_scheduled_adc_actions()
     color_string = "?";
     color_length = 1;
   }
-  strcpy(buffer, "color=");
+  char buffer[] = "color=";
   strcpy(&buffer[6], color_string);
   buffer[6 + color_length] = '\n';
-  buffer[6 + color_length + 1] = '\0';
-  if (mode == RUNNING) {
+  if (mode == NORMAL_RUNNING) {
     detected_colors.push_back(color);
   }
   post_event(buffer, 6 + color_length + 1);
@@ -297,21 +302,19 @@ void on_input_change(uint32_t mask, int value, int last_value)
       return;
     }
     lightbarriers3_to_5_last_change = now;
-    if (mode==RUNNING) {
+    if (mode==NORMAL_RUNNING) {
       if (value) {
         __R30 &= ~MOTOR_MASK;
-        mode=STOPPED;
-        static const char emergency_motor_stop[] = "mode=stopped (emergency-stop)\n";
+        mode=NORMAL_STOPPED;
+        static const char emergency_motor_stop[] = "mode=normal-stopped (emergency-stop)\n";
         post_event(emergency_motor_stop, 30);
       }
     }
     else {
       if (value) {
-        static const char emergency_stop_on[] = "emergency-stop=on\n";
         post_event(emergency_stop_on, 18);
       }
       else {
-        static const char emergency_stop_off[] = "emergency-stop=off\n";
         post_event(emergency_stop_off, 19);
       }
     }
@@ -343,7 +346,7 @@ void on_input_change(uint32_t mask, int value, int last_value)
     lightbarrier2_last_change = now;
     if (value) {
       post_event(lightbarrier2_on, 17);
-      if (mode == RUNNING) {
+      if (mode == NORMAL_RUNNING) {
         if (detected_colors.size() == 0) {
           post_event("debug: No colored object detected. Letting it pass...\n", 54);
           return;
@@ -473,25 +476,34 @@ void main() {
             }
             rc = strncmp((char*)payload, "connect\r", len);
             if (rc == 0) {
-              bool value = get_last_input(LIGHTBARRIER1_MASK);
-              if (value) {
-                post_event(lightbarrier1_on, 17);
-              }
-              else {
-                post_event(lightbarrier1_off, 18);
-              }
-              value = get_last_input(LIGHTBARRIER2_MASK);
-              if (value) {
-                post_event(lightbarrier2_on, 17);
-              }
-              else {
-                post_event(lightbarrier2_off, 18);
-              }
+              post_event(motor_stop, 11);
+              post_event(valve1_off, 11);
+              post_event(valve2_off, 11);
+              post_event(valve3_off, 11);
+              post_event(mode_diagnostic, 16);
               if (is_conveyor_running) {
                 post_event(conveyor_running, 17);
               }
               else {
                 post_event(conveyor_stopped, 17);
+              }
+              if (get_last_input(LIGHTBARRIER1_MASK)) {
+                post_event(lightbarrier1_on, 17);
+              }
+              else {
+                post_event(lightbarrier1_off, 18);
+              }
+              if (get_last_input(LIGHTBARRIER2_MASK)) {
+                post_event(lightbarrier2_on, 17);
+              }
+              else {
+                post_event(lightbarrier2_off, 18);
+              }
+              if (get_last_input(LIGHTBARRIERS3_TO_5_MASK)) {
+                post_event(emergency_stop_on, 18);
+              }
+              else {
+                post_event(emergency_stop_off, 19);
               }
             }
             rc = strncmp((char*)payload, "disconnect\r", len);
@@ -504,13 +516,13 @@ void main() {
             }
             rc = strncmp((char*)payload, "mode=stopped\r", len);
             if (rc == 0) {
-              mode = STOPPED;
+              mode = NORMAL_STOPPED;
             }
             rc = strncmp((char*)payload, "mode=diagnostic\r", len);
             if (rc == 0) {
               mode = DIAGNOSTIC;
             }
-            if (mode == STOPPED) {
+            if (mode == NORMAL_STOPPED) {
               rc = strncmp((char*)payload, "start\r", len);
               if (rc == 0) {
                 if (get_last_input(LIGHTBARRIERS3_TO_5_MASK)) {
@@ -518,15 +530,19 @@ void main() {
                 }
                 else {
                   __R30 |= MOTOR_MASK;
-                  mode = RUNNING;
+                  mode = NORMAL_RUNNING;
+                  post_event(motor_start, 12);
+                  post_event(mode_normal_started, 13);
                 }
               }
             }
-            if (mode == RUNNING) {
+            if (mode == NORMAL_RUNNING) {
               rc = strncmp((char*)payload, "stop\r", len);
               if (rc == 0) {
                 __R30 &= ~MOTOR_MASK;
-                mode = STOPPED;
+                mode = NORMAL_STOPPED;
+                post_event(motor_stop, 11);
+                post_event(mode_normal_stopped, 13);
               }
             }
             if (mode == DIAGNOSTIC) {
