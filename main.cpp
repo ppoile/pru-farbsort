@@ -470,6 +470,7 @@ void main() {
           /* Receive the message */
           if (pru_rpmsg_receive(&transport, &src, &dst, payload, &len) == PRU_RPMSG_SUCCESS) {
             rpmsg_connected = true;
+            bool skip_echo = false;
             int rc;
             if (len < RPMSG_BUF_SIZE) {
               payload[len] = '\0';
@@ -526,6 +527,7 @@ void main() {
               rc = strncmp((char*)payload, "start\r", len);
               if (rc == 0) {
                 if (get_last_input(LIGHTBARRIERS3_TO_5_MASK)) {
+                  skip_echo = true;
                   post_event("log: start prevented because 'lightbarriers3_to_5=on'\n", 54);
                 }
                 else {
@@ -580,8 +582,10 @@ void main() {
               }
             }
 
-            /* Echo the message back to the same address from which we just received */
-            pru_rpmsg_send(&transport, dst, src, payload, len);
+            if (!skip_echo) {
+              /* Echo the message back to the same address from which we just received */
+              pru_rpmsg_send(&transport, dst, src, payload, len);
+            }
           }
         }
       }
