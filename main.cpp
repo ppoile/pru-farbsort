@@ -461,13 +461,21 @@ void main() {
         if (CT_MBX.MESSAGE[MB_FROM_ARM_HOST] == 1) {
           /* Receive the message */
           if (pru_rpmsg_receive(&transport, &src, &dst, payload, &len) == PRU_RPMSG_SUCCESS) {
+            uint32_t stripped_len = len;
             rpmsg_connected = true;
             bool skip_echo = false;
             int rc;
             if (len < RPMSG_BUF_SIZE) {
-              payload[len] = '\0';
+              uint32_t pos = len;
+              payload[pos] = '\0';
+              if (pos > 0 ) {
+                pos -= 1;
+                if (payload[pos] == '\r') {
+                  stripped_len = len - 1;
+                }
+              }
             }
-            rc = strncmp((char*)payload, "connect\r", len);
+            rc = strncmp((char*)payload, "connect", stripped_len);
             if (rc == 0) {
               post_event(motor_stop, 11);
               post_event(valve1_off, 11);
@@ -500,7 +508,7 @@ void main() {
                 post_event(emergency_stop_off, 19);
               }
             }
-            rc = strncmp((char*)payload, "disconnect\r", len);
+            rc = strncmp((char*)payload, "disconnect", stripped_len);
             if (rc == 0) {
               __R30 &= ~MOTOR_MASK;
               __R30 &= ~VALVE1_MASK;
@@ -511,7 +519,7 @@ void main() {
               rpmsg_connected = false;
             }
             if (mode == MODE_DIAGNOSTIC) {
-              rc = strncmp((char*)payload, "mode=normal\r", len);
+              rc = strncmp((char*)payload, "mode=normal", stripped_len);
               if (rc == 0) {
                 __R30 &= ~MOTOR_MASK;
                 post_event(motor_stop, 11);
@@ -527,7 +535,7 @@ void main() {
               }
             }
             if (mode == MODE_NORMAL) {
-              rc = strncmp((char*)payload, "mode=diagnostic\r", len);
+              rc = strncmp((char*)payload, "mode=diagnostic", stripped_len);
               if (rc == 0) {
                 if (is_controller_started) {
                   __R30 &= ~MOTOR_MASK;
@@ -539,7 +547,7 @@ void main() {
               }
             }
             if (mode == MODE_NORMAL && !is_controller_started) {
-              rc = strncmp((char*)payload, "start\r", len);
+              rc = strncmp((char*)payload, "start", stripped_len);
               if (rc == 0) {
                 if (get_last_input(LIGHTBARRIERS3_TO_5_MASK)) {
                   skip_echo = true;
@@ -554,7 +562,7 @@ void main() {
               }
             }
             if (is_controller_started) {
-              rc = strncmp((char*)payload, "stop\r", len);
+              rc = strncmp((char*)payload, "stop", stripped_len);
               if (rc == 0) {
                 __R30 &= ~MOTOR_MASK;
                 post_event(motor_stop, 11);
@@ -563,35 +571,35 @@ void main() {
               }
             }
             if (mode == MODE_DIAGNOSTIC) {
-              rc = strncmp((char*)payload, "motor=start\r", len);
+              rc = strncmp((char*)payload, "motor=start", stripped_len);
               if (rc == 0) {
                 __R30 |= MOTOR_MASK;
               }
-              rc = strncmp((char*)payload, "motor=stop\r", len);
+              rc = strncmp((char*)payload, "motor=stop", stripped_len);
               if (rc == 0) {
                 __R30 &= ~MOTOR_MASK;
               }
-              rc = strncmp((char*)payload, "valve1=on\r", len);
+              rc = strncmp((char*)payload, "valve1=on", stripped_len);
               if (rc == 0) {
                 __R30 |= VALVE1_MASK;
               }
-              rc = strncmp((char*)payload, "valve1=off\r", len);
+              rc = strncmp((char*)payload, "valve1=off", stripped_len);
               if (rc == 0) {
                 __R30 &= ~VALVE1_MASK;
               }
-              rc = strncmp((char*)payload, "valve2=on\r", len);
+              rc = strncmp((char*)payload, "valve2=on", stripped_len);
               if (rc == 0) {
                 __R30 |= VALVE2_MASK;
               }
-              rc = strncmp((char*)payload, "valve2=off\r", len);
+              rc = strncmp((char*)payload, "valve2=off", stripped_len);
               if (rc == 0) {
                 __R30 &= ~VALVE2_MASK;
               }
-              rc = strncmp((char*)payload, "valve3=on\r", len);
+              rc = strncmp((char*)payload, "valve3=on", stripped_len);
               if (rc == 0) {
                 __R30 |= VALVE3_MASK;
               }
-              rc = strncmp((char*)payload, "valve3=off\r", len);
+              rc = strncmp((char*)payload, "valve3=off", stripped_len);
               if (rc == 0) {
                 __R30 &= ~VALVE3_MASK;
               }
