@@ -509,30 +509,33 @@ void main() {
               is_controller_started = false;
               rpmsg_connected = false;
             }
-            rc = strncmp((char*)payload, "mode=normal\r", len);
-            if (rc == 0) {
-              if (mode == MODE_DIAGNOSTIC) {
+            if (mode == MODE_DIAGNOSTIC) {
+              rc = strncmp((char*)payload, "mode=normal\r", len);
+              if (rc == 0) {
                 __R30 &= ~MOTOR_MASK;
+                post_event(motor_stop, 11);
                 __R30 &= ~VALVE1_MASK;
                 post_event(valve1_off, 11);
                 __R30 &= ~VALVE2_MASK;
                 post_event(valve2_off, 11);
                 __R30 &= ~VALVE3_MASK;
                 post_event(valve3_off, 11);
-                mode = MODE_NORMAL;
-                post_event(mode_normal, 12);
                 is_controller_started = false;
                 post_event(controller_stopped, 19);
+                mode = MODE_NORMAL;
               }
             }
-            rc = strncmp((char*)payload, "mode=diagnostic\r", len);
-            if (rc == 0) {
-              if (is_controller_started) {
-                __R30 &= ~MOTOR_MASK;
-                is_controller_started = false;
-                post_event(controller_stopped, 19);
+            if (mode == MODE_NORMAL) {
+              rc = strncmp((char*)payload, "mode=diagnostic\r", len);
+              if (rc == 0) {
+                if (is_controller_started) {
+                  __R30 &= ~MOTOR_MASK;
+                  post_event(motor_stop, 11);
+                  is_controller_started = false;
+                  post_event(controller_stopped, 19);
+                }
+                mode = MODE_DIAGNOSTIC;
               }
-              mode = MODE_DIAGNOSTIC;
             }
             if (mode == MODE_NORMAL && !is_controller_started) {
               rc = strncmp((char*)payload, "start\r", len);
