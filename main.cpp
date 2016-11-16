@@ -304,10 +304,10 @@ void check_scheduled_adc_actions()
   char buffer[] = "color=";
   strcpy(&buffer[6], color_string);
   buffer[6 + color_length] = '\n';
+  post_event(buffer, 6 + color_length + 1);
   if (controller_started && color != UNKNOWN) {
     detected_colors.push_back(color);
   }
-  post_event(buffer, 6 + color_length + 1);
   adc_min_value = 0xFFFF;
 }
 
