@@ -48,6 +48,7 @@ extern "C" {
 #include "resource_table_0.h"
 }
 
+#include "adc.h"
 #include "scheduled_output_action.h"
 #include "timer.h"
 
@@ -122,11 +123,6 @@ static const char lightbarrier2_off[] = "lightbarrier2=off\n";
 static const char emergency_stop_on[] = "emergency-stop=on\n";
 static const char emergency_stop_off[] = "emergency-stop=off\n";
 
-const uint32_t FIFO1COUNT      = 0xf0;
-const uint32_t FIFO1DATA       = 0x200;
-const uint32_t ADCSTAT         = 0x44;
-const uint32_t STEPENABLE      = 0x54;
-
 static const uint32_t ADC_LIMIT_TOLERANCE = 60;
 static const uint32_t ADC_NO_OBJECT_LIMIT = 0x4be;
 static const uint32_t ADC_BLUE_OBJECT_LIMIT = 0x49a;
@@ -150,23 +146,6 @@ struct pru_rpmsg_transport transport;
 uint16_t src, dst, len;
 uint32_t now;
 uint32_t last_all_inputs_value;
-
-uint32_t adc_read()
-{
-  static uint32_t * const AdcBaseAddr = (uint32_t*)0x44E0D000;
-
-  while (AdcBaseAddr[FIFO1COUNT/4] > 0) {
-    (void)AdcBaseAddr[FIFO1DATA/4];
-  }
-  while (!((AdcBaseAddr[ADCSTAT/4] & (1<<5)) == 0)) {
-  }
-  AdcBaseAddr[STEPENABLE/4] = 0x2;
-  while (AdcBaseAddr[FIFO1COUNT/4] < 1) {
-  }
-  const uint16_t value = AdcBaseAddr[FIFO1DATA/4];
-  AdcBaseAddr[STEPENABLE/4] = 0x0;
-  return value;
-}
 
 uint32_t adc_last_measurement;
 uint32_t adc_min_value;
