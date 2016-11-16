@@ -323,7 +323,7 @@ void on_input_change(uint32_t mask, int value, int last_value)
         __R30 &= ~MOTOR_MASK;
         controller_started = false;
         post_event(controller_stop, 16);
-        //post_event("log: emergency-stop!\n", 21);
+        post_event("log: emergency-stop!\n", 21);
       }
     }
     else {
@@ -565,7 +565,7 @@ void main() {
               if (rc == 0) {
                 if (get_last_input(LIGHTBARRIERS3_TO_5_MASK)) {
                   skip_echo = true;
-                  //post_event("log: 'lightbarriers3_to_5=on' prevented start\n", 54);
+                  post_event("log: 'lightbarriers3_to_5=on' prevented start\n", 54);
                 }
                 else {
                   __R30 |= MOTOR_MASK;
