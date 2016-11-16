@@ -288,7 +288,7 @@ void check_scheduled_adc_actions()
   char buffer[] = "color=";
   strcpy(&buffer[6], color_string);
   buffer[6 + color_length] = '\n';
-  if (mode == NORMAL_RUNNING) {
+  if (mode == NORMAL_RUNNING && color != UNKNOWN) {
     detected_colors.push_back(color);
   }
   post_event(buffer, 6 + color_length + 1);
