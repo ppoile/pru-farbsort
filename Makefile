@@ -30,7 +30,7 @@ LFLAGS=--reread_libs --warn_sections --stack_size=$(STACK_SIZE) --heap_size=$(HE
 TARGET=$(GEN_DIR)/$(PROJ_NAME).out
 MAP=$(GEN_DIR)/$(PROJ_NAME).map
 #Using .object instead of .obj in order to not conflict with the CCS build process
-OBJECTS=$(GEN_DIR)/main.object $(GEN_DIR)/timer.object $(GEN_DIR)/scheduled_output_action.object $(GEN_DIR)/DirectMemory.object $(GEN_DIR)/TiAdc.object $(GEN_DIR)/AdcMeasurement.object
+OBJECTS=$(GEN_DIR)/main.object $(GEN_DIR)/timer.object $(GEN_DIR)/scheduled_output_action.object
 
 all: printStart $(TARGET) printEnd
 
