@@ -296,21 +296,17 @@ void on_input_change(uint32_t mask, int value, int last_value)
       return;
     }
     lightbarriers3_to_5_last_change = now;
-    if (is_controller_started) {
-      if (value) {
-        post_event(emergency_stop_on, 18);
+    if (value) {
+      post_event(emergency_stop_on, 18);
+      if (is_controller_started) {
         __R30 &= ~MOTOR_MASK;
+        post_event(motor_stop, 11);
         is_controller_started = false;
         post_event(controller_stopped, 19);
       }
     }
     else {
-      if (value) {
-        post_event(emergency_stop_on, 18);
-      }
-      else {
-        post_event(emergency_stop_off, 19);
-      }
+      post_event(emergency_stop_off, 19);
     }
   }
   if (mask == PULSECOUNTER_MASK) {
