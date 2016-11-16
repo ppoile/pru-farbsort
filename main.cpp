@@ -108,6 +108,7 @@ static const uint32_t VALVE1_MASK = 0x4000;
 static const uint32_t VALVE2_MASK = 0x80;
 static const uint32_t VALVE3_MASK = 0x20;
 static const char motor_stop[] = "motor=stop\n";
+static const char motor_start[] = "motor=start\n";
 static const char valve1_off[] = "valve1=off\n";
 static const char valve2_off[] = "valve2=off\n";
 static const char valve3_off[] = "valve3=off\n";
@@ -546,6 +547,7 @@ void main() {
                 }
                 else {
                   __R30 |= MOTOR_MASK;
+                  post_event(motor_start, 12);
                   is_controller_started = true;
                   post_event(controller_started, 19);
                 }
@@ -555,6 +557,7 @@ void main() {
               rc = strncmp((char*)payload, "stop\r", len);
               if (rc == 0) {
                 __R30 &= ~MOTOR_MASK;
+                post_event(motor_stop, 11);
                 is_controller_started = false;
                 post_event(controller_stopped, 19);
               }
