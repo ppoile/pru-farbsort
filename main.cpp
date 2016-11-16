@@ -551,7 +551,7 @@ void main() {
               if (rc == 0) {
                 if (get_last_input(LIGHTBARRIERS3_TO_5_MASK)) {
                   skip_echo = true;
-                  post_event("log: 'lightbarriers3_to_5=on' prevented start\n", 54);
+                  post_event("log: 'emergency-stop=on' prevented start\n", 41);
                 }
                 else {
                   __R30 |= MOTOR_MASK;
