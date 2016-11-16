@@ -298,10 +298,10 @@ void on_input_change(uint32_t mask, int value, int last_value)
     lightbarriers3_to_5_last_change = now;
     if (is_controller_started) {
       if (value) {
+        post_event(emergency_stop_on, 18);
         __R30 &= ~MOTOR_MASK;
         is_controller_started = false;
         post_event(controller_stopped, 19);
-        post_event("log: emergency-stop!\n", 21);
       }
     }
     else {
