@@ -210,12 +210,8 @@ void check_scheduled_pusher_actions()
     strcpy(&buffer[length], "off");
     length += 3;
   }
-  strcpy(&buffer[length], " (now=0x");
-  length += 8;
-  appendNumber(&buffer[length], now);
-  length += 8;
-  strcpy(&buffer[length], ")\n");
-  length += 2;
+  buffer[length] = '\n';
+  length += 1;
   post_event(buffer, length);
   if (next_action.value) {
     __R30 |= next_action.bitmask;
