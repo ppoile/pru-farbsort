@@ -136,7 +136,6 @@ static const uint32_t ADC_WHITE_OBJECT_LIMIT = 0x307;
 enum Mode { MODE_NORMAL, MODE_DIAGNOSTIC };
 
 static const char mode_normal[] = "mode=normal\n";
-static const char mode_diagnostic[] = "mode=diagnostic\n";
 static const char controller_stop[] = "controller=stop\n";
 static const char controller_start[] = "controller=start\n";
 static const char conveyor_running[] = "conveyor=running\n";
