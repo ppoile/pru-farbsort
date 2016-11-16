@@ -301,7 +301,7 @@ void check_scheduled_adc_actions()
     color_string = "?";
     color_length = 1;
   }
-  char buffer[] = "color=";
+  char buffer[12] = "color=";
   strcpy(&buffer[6], color_string);
   buffer[6 + color_length] = '\n';
   post_event(buffer, 6 + color_length + 1);
