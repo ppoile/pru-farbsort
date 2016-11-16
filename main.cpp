@@ -136,13 +136,13 @@ static const uint32_t ADC_WHITE_OBJECT_LIMIT = 0x307;
 enum Mode { MODE_NORMAL, MODE_DIAGNOSTIC };
 
 static const char mode_normal[] = "mode=normal\n";
-static const char controller_stop[] = "controller=stop\n";
-static const char controller_start[] = "controller=start\n";
+static const char controller_stopped[] = "controller=stopped\n";
+static const char controller_started[] = "controller=started\n";
 static const char conveyor_running[] = "conveyor=running\n";
 static const char conveyor_stopped[] = "conveyor=stopped\n";
 
 Mode mode;
-bool controller_started;
+bool is_controller_started;
 bool rpmsg_connected;
 uint32_t pulsecounter_last_change;
 bool is_conveyor_running;
@@ -304,7 +304,7 @@ void check_scheduled_adc_actions()
   strcpy(&buffer[6], color_string);
   buffer[6 + color_length] = '\n';
   post_event(buffer, 6 + color_length + 1);
-  if (controller_started && color != UNKNOWN) {
+  if (is_controller_started && (color != UNKNOWN)) {
     detected_colors.push_back(color);
   }
   adc_min_value = 0xFFFF;
@@ -317,11 +317,11 @@ void on_input_change(uint32_t mask, int value, int last_value)
       return;
     }
     lightbarriers3_to_5_last_change = now;
-    if (controller_started) {
+    if (is_controller_started) {
       if (value) {
         __R30 &= ~MOTOR_MASK;
-        controller_started = false;
-        post_event(controller_stop, 16);
+        is_controller_started = false;
+        post_event(controller_stopped, 19);
         post_event("log: emergency-stop!\n", 21);
       }
     }
@@ -361,7 +361,7 @@ void on_input_change(uint32_t mask, int value, int last_value)
     lightbarrier2_last_change = now;
     if (value) {
       post_event(lightbarrier2_on, 17);
-      if (controller_started) {
+      if (is_controller_started) {
         if (detected_colors.size() == 0) {
           post_event("debug: No colored object detected. Letting it pass...\n", 54);
           return;
@@ -427,7 +427,7 @@ bool get_last_input(uint32_t mask)
 
 void main() {
   mode = MODE_NORMAL;
-  controller_started = false;
+  is_controller_started = false;
   rpmsg_connected = false;
   pulsecounter_last_change = 0;
   is_conveyor_running = false;
@@ -498,7 +498,7 @@ void main() {
               post_event(valve2_off, 11);
               post_event(valve3_off, 11);
               post_event(mode_normal, 12);
-              post_event(controller_stop, 16);
+              post_event(controller_stopped, 19);
               if (is_conveyor_running) {
                 post_event(conveyor_running, 17);
               }
@@ -531,7 +531,7 @@ void main() {
               __R30 &= ~VALVE2_MASK;
               __R30 &= ~VALVE3_MASK;
               mode = MODE_NORMAL;
-              controller_started = false;
+              is_controller_started = false;
               rpmsg_connected = false;
             }
             rc = strncmp((char*)payload, "mode=normal\r", len);
@@ -546,20 +546,20 @@ void main() {
                 post_event(valve3_off, 11);
                 mode = MODE_NORMAL;
                 post_event(mode_normal, 12);
-                controller_started = false;
-                post_event(controller_stop, 16);
+                is_controller_started = false;
+                post_event(controller_stopped, 19);
               }
             }
             rc = strncmp((char*)payload, "mode=diagnostic\r", len);
             if (rc == 0) {
-              if (controller_started) {
+              if (is_controller_started) {
                 __R30 &= ~MOTOR_MASK;
-                controller_started = false;
-                post_event(controller_stop, 16);
+                is_controller_started = false;
+                post_event(controller_stopped, 19);
               }
               mode = MODE_DIAGNOSTIC;
             }
-            if (mode == MODE_NORMAL && !controller_started) {
+            if (mode == MODE_NORMAL && !is_controller_started) {
               rc = strncmp((char*)payload, "start\r", len);
               if (rc == 0) {
                 if (get_last_input(LIGHTBARRIERS3_TO_5_MASK)) {
@@ -568,17 +568,17 @@ void main() {
                 }
                 else {
                   __R30 |= MOTOR_MASK;
-                  controller_started = true;
-                  post_event(controller_start, 17);
+                  is_controller_started = true;
+                  post_event(controller_started, 19);
                 }
               }
             }
-            if (controller_started) {
+            if (is_controller_started) {
               rc = strncmp((char*)payload, "stop\r", len);
               if (rc == 0) {
                 __R30 &= ~MOTOR_MASK;
-                controller_started = false;
-                post_event(controller_stop, 16);
+                is_controller_started = false;
+                post_event(controller_stopped, 19);
               }
             }
             if (mode == MODE_DIAGNOSTIC) {
