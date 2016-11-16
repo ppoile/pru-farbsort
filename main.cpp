@@ -131,14 +131,19 @@ static const uint32_t ADC_RED_OBJECT_LIMIT = 0x343;
 static const uint32_t ADC_WHITE_OBJECT_LIMIT = 0x307;
 
 enum Mode { MODE_NORMAL, MODE_DIAGNOSTIC };
-
 static const char mode_normal[] = "mode=normal\n";
 static const char controller_stopped[] = "controller=stopped\n";
 static const char controller_started[] = "controller=started\n";
 static const char conveyor_running[] = "conveyor=running\n";
 static const char conveyor_stopped[] = "conveyor=stopped\n";
 
+enum Color { BLUE, RED, WHITE, UNKNOWN };
+enum SortOrder { BLUE_RED_WHITE };
+
+static const char sort_order_blue_red_white[] = "sort-order=blue-red-white\n";
+
 Mode mode;
+SortOrder sort_order;
 bool is_controller_started;
 bool rpmsg_connected;
 uint32_t pulsecounter_last_change;
@@ -154,8 +159,8 @@ uint32_t lightbarrier1_last_change;
 uint32_t lightbarrier2_last_change;
 uint32_t lightbarriers3_to_5_last_change;
 
-enum Color { BLUE, RED, WHITE, UNKNOWN };
 std::list<Color> detected_colors;
+
 
 int16_t post_event(char const *event, uint16_t length)
 {
@@ -403,6 +408,7 @@ bool get_last_input(uint32_t mask)
 
 void main() {
   mode = MODE_NORMAL;
+  sort_order = BLUE_RED_WHITE;
   is_controller_started = false;
   rpmsg_connected = false;
   pulsecounter_last_change = 0;
@@ -482,6 +488,7 @@ void main() {
               post_event(valve2_off, 11);
               post_event(valve3_off, 11);
               post_event(mode_normal, 12);
+              post_event(sort_order_blue_red_white, 26);
               post_event(controller_stopped, 19);
               if (is_conveyor_running) {
                 post_event(conveyor_running, 17);
