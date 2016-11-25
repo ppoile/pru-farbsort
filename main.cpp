@@ -291,7 +291,7 @@ void check_scheduled_adc_actions()
   adc_min_value = 0xFFFF;
 }
 
-void on_input_change(uint32_t mask, int value)
+void on_input_change(uint32_t mask, bool value)
 {
   if (mask == LIGHTBARRIERS3_TO_5_MASK) {
     if (now - lightbarriers3_to_5_last_change < 5) {
