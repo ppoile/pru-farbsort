@@ -368,6 +368,12 @@ void on_input_change(uint32_t mask, bool value)
       post_event(lightbarrier2_off, 18);
     }
   }
+  if (value) {
+    last_all_inputs_value |= mask;
+  }
+  else {
+    last_all_inputs_value &= ~mask;
+  }
 }
 
 void process_input(uint32_t all_inputs_value, uint32_t mask)
@@ -393,8 +399,6 @@ void process_inputs(uint32_t all_inputs_value)
       post_event(conveyor_stopped, 17);
     }
   }
-
-  last_all_inputs_value = all_inputs_value;
 }
 
 bool get_last_input(uint32_t mask)
