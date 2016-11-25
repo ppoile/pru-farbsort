@@ -372,8 +372,8 @@ void on_input_change(uint32_t mask, bool value)
 
 void process_input(uint32_t all_inputs_value, uint32_t mask)
 {
-  bool value = !(!(all_inputs_value & mask));
-  bool last_value = !(!(last_all_inputs_value & mask));
+  bool value = all_inputs_value & mask;
+  bool last_value = last_all_inputs_value & mask;
   if (value != last_value) {
     on_input_change(mask, value);
   }
@@ -399,7 +399,7 @@ void process_inputs(uint32_t all_inputs_value)
 
 bool get_last_input(uint32_t mask)
 {
-  return !(!(last_all_inputs_value & mask));
+  return last_all_inputs_value & mask;
 }
 
 void main() {
