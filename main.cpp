@@ -311,14 +311,14 @@ void on_input_change(uint32_t mask, bool value)
       post_event(emergency_stop_off, 19);
     }
   }
-  if (mask == PULSECOUNTER_MASK) {
+  else if (mask == PULSECOUNTER_MASK) {
     pulsecounter_last_change = timer_get_ticks();
     if (!is_conveyor_running) {
       is_conveyor_running = true;
       post_event(conveyor_running, 17);
     }
   }
-  if (mask == LIGHTBARRIER1_MASK) {
+  else if (mask == LIGHTBARRIER1_MASK) {
     if (now - lightbarrier1_last_change < 5) {
       return;
     }
@@ -331,7 +331,7 @@ void on_input_change(uint32_t mask, bool value)
       schedule_adc_action(now + 111);
     }
   }
-  if (mask == LIGHTBARRIER2_MASK) {
+  else if (mask == LIGHTBARRIER2_MASK) {
     if (now - lightbarrier2_last_change < 5) {
       return;
     }
@@ -369,6 +369,7 @@ void on_input_change(uint32_t mask, bool value)
       post_event(lightbarrier2_off, 18);
     }
   }
+
   if (value) {
     last_all_inputs_value |= mask;
   }
