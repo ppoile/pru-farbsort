@@ -403,6 +403,11 @@ void process_inputs(uint32_t all_inputs_value)
   }
 }
 
+uint32_t get_all_inputs()
+{
+  return __R31 & ~LIGHTBARRIERS3_TO_5_MASK;
+}
+
 bool get_last_input(uint32_t mask)
 {
   return last_all_inputs_value & mask;
@@ -419,7 +424,7 @@ void main() {
   dst=0xFFFF;
   len=0xFFFF;
   now = 0;
-  last_all_inputs_value = __R31;
+  last_all_inputs_value = get_all_inputs();
   __R30 = 0;
   adc_last_measurement = 0;
   adc_min_value = 0xFFFF;
@@ -622,7 +627,7 @@ void main() {
         }
       }
     }
-    process_inputs(__R31);
+    process_inputs(get_all_inputs());
     check_scheduled_pusher_actions();
     check_scheduled_adc_actions();
   }
