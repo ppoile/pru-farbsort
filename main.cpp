@@ -341,26 +341,27 @@ void on_input_change(uint32_t mask, bool value)
       if (is_controller_started) {
         if (detected_colors.size() == 0) {
           post_event("debug: No colored object detected. Letting it pass...\n", 54);
-          return;
         }
-        Color color = detected_colors.front();
-        detected_colors.pop_front();
-        switch (color) {
-          case BLUE:
-            schedule_pusher_action(now + 69, VALVE1_MASK, true);
-            schedule_pusher_action(now + 99, VALVE1_MASK, false);
-            break;
-          case RED:
-            schedule_pusher_action(now + 166, VALVE2_MASK, true);
-            schedule_pusher_action(now + 196, VALVE2_MASK, false);
-            break;
-          case WHITE:
-            schedule_pusher_action(now + 274, VALVE3_MASK, true);
-            schedule_pusher_action(now + 304, VALVE3_MASK, false);
-            break;
-          case UNKNOWN:
-          default:
-            break;
+        else {
+          Color color = detected_colors.front();
+          detected_colors.pop_front();
+          switch (color) {
+            case BLUE:
+              schedule_pusher_action(now + 69, VALVE1_MASK, true);
+              schedule_pusher_action(now + 99, VALVE1_MASK, false);
+              break;
+            case RED:
+              schedule_pusher_action(now + 166, VALVE2_MASK, true);
+              schedule_pusher_action(now + 196, VALVE2_MASK, false);
+              break;
+            case WHITE:
+              schedule_pusher_action(now + 264, VALVE3_MASK, true);
+              schedule_pusher_action(now + 294, VALVE3_MASK, false);
+              break;
+            case UNKNOWN:
+            default:
+              break;
+          }
         }
       }
     }
