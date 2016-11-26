@@ -49,12 +49,14 @@ extern "C" {
 }
 
 #include "adc.h"
+#include "hal.h"
 #include "scheduled_output_action.h"
 #include "timer.h"
 
 
 volatile register uint32_t __R30;
 volatile register uint32_t __R31;
+
 
 void appendNumber(char *buffer, uint32_t value)
 {
@@ -103,20 +105,12 @@ void appendNumber(char *buffer, uint32_t value)
 
 uint8_t payload[RPMSG_BUF_SIZE];
 
-static const uint32_t MOTOR_MASK = 0x8000;
-static const uint32_t VALVE1_MASK = 0x4000;
-static const uint32_t VALVE2_MASK = 0x80;
-static const uint32_t VALVE3_MASK = 0x20;
 static const char motor_stop[] = "motor=stop\n";
 static const char motor_start[] = "motor=start\n";
 static const char valve1_off[] = "valve1=off\n";
 static const char valve2_off[] = "valve2=off\n";
 static const char valve3_off[] = "valve3=off\n";
 
-static const uint32_t PULSECOUNTER_MASK = 0x8000;
-static const uint32_t LIGHTBARRIER1_MASK = 0x4000;
-static const uint32_t LIGHTBARRIER2_MASK = 0x10000;
-static const uint32_t LIGHTBARRIERS3_TO_5_MASK = 0x4;
 static const char lightbarrier1_on[] = "lightbarrier1=on\n";
 static const char lightbarrier1_off[] = "lightbarrier1=off\n";
 static const char lightbarrier2_on[] = "lightbarrier2=on\n";
@@ -401,11 +395,6 @@ void process_inputs(uint32_t all_inputs_value)
       post_event(conveyor_stopped, 17);
     }
   }
-}
-
-uint32_t get_all_inputs()
-{
-  return __R31 & ~LIGHTBARRIERS3_TO_5_MASK;
 }
 
 bool get_last_input(uint32_t mask)
