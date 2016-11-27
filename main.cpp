@@ -237,6 +237,11 @@ void check_scheduled_adc_actions()
     return;
   }
   adc_actions.pop_front();
+  if (verbose) {
+    char buffer[] = "log: adc_min_value=0xXXXXXXXX\n";
+    appendNumber(&buffer[21], adc_min_value);
+    post_event(buffer, 30);
+  }
   Color color;
   char *color_string;
   uint32_t color_length;
