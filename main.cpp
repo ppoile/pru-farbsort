@@ -125,6 +125,9 @@ enum SortOrder { BLUE_RED_WHITE };
 
 static const char sort_order_blue_red_white[] = "sort-order=blue-red-white\n";
 
+static const char verbose_on[] = "verbose=on\n";
+static const char verbose_off[] = "verbose=off\n";
+
 Mode mode;
 SortOrder sort_order;
 bool is_controller_started;
@@ -144,6 +147,7 @@ uint32_t lightbarriers3_to_5_last_change;
 
 std::list<Color> detected_colors;
 
+bool verbose;
 
 int16_t post_event(char const *event, uint16_t length)
 {
@@ -409,6 +413,7 @@ void main() {
   lightbarrier1_last_change = 0;
   lightbarrier2_last_change = 0;
   lightbarriers3_to_5_last_change = 0;
+  verbose = false;
 
   volatile uint8_t *status;
 
@@ -505,6 +510,12 @@ void main() {
               else {
                 post_event(controller_stopped, 19);
               }
+              if (verbose) {
+                post_event(verbose_on, 11);
+              }
+              else {
+                post_event(verbose_off, 12);
+              }
               if (is_conveyor_running) {
                 post_event(conveyor_running, 17);
               }
@@ -539,6 +550,18 @@ void main() {
               mode = MODE_NORMAL;
               is_controller_started = false;
               rpmsg_connected = false;
+            }
+            if (!verbose) {
+              rc = strncmp((char*)payload, "verbose=on", stripped_len);
+              if (rc == 0) {
+                verbose = true;
+              }
+            }
+            if (verbose) {
+              rc = strncmp((char*)payload, "verbose=off", stripped_len);
+              if (rc == 0) {
+                verbose = false;
+              }
             }
             if (mode == MODE_DIAGNOSTIC) {
               rc = strncmp((char*)payload, "mode=normal", stripped_len);
