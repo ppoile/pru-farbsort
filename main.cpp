@@ -92,8 +92,11 @@ uint8_t payload[RPMSG_BUF_SIZE];
 
 static const char motor_stop[] = "motor=stop\n";
 static const char motor_start[] = "motor=start\n";
+static const char valve1_on[] = "valve1=on\n";
 static const char valve1_off[] = "valve1=off\n";
+static const char valve2_on[] = "valve2=on\n";
 static const char valve2_off[] = "valve2=off\n";
+static const char valve3_on[] = "valve3=on\n";
 static const char valve3_off[] = "valve3=off\n";
 
 static const char lightbarrier1_on[] = "lightbarrier1=on\n";
@@ -111,6 +114,7 @@ static const uint32_t ADC_WHITE_OBJECT_LIMIT = 0x307;
 
 enum Mode { MODE_NORMAL, MODE_DIAGNOSTIC };
 static const char mode_normal[] = "mode=normal\n";
+static const char mode_diagnostic[] = "mode=diagnostic\n";
 static const char controller_stopped[] = "controller=stopped\n";
 static const char controller_started[] = "controller=started\n";
 static const char conveyor_running[] = "conveyor=running\n";
@@ -464,13 +468,43 @@ void main() {
             }
             rc = strncmp((char*)payload, "connect", stripped_len);
             if (rc == 0) {
-              post_event(motor_stop, 11);
-              post_event(valve1_off, 11);
-              post_event(valve2_off, 11);
-              post_event(valve3_off, 11);
-              post_event(mode_normal, 12);
+              if (__R30 & MOTOR_MASK) {
+                post_event(motor_start, 12);
+              }
+              else {
+                post_event(motor_stop, 11);
+              }
+              if (__R30 & VALVE1_MASK) {
+                post_event(valve1_on, 10);
+              }
+              else {
+                post_event(valve1_off, 11);
+              }
+              if (__R30 & VALVE2_MASK) {
+                post_event(valve2_on, 10);
+              }
+              else {
+                post_event(valve2_off, 11);
+              }
+              if (__R30 & VALVE3_MASK) {
+                post_event(valve3_on, 10);
+              }
+              else {
+                post_event(valve3_off, 11);
+              }
+              if (mode == MODE_NORMAL) {
+                post_event(mode_normal, 12);
+              }
+              else {
+                post_event(mode_diagnostic, 16);
+              }
               post_event(sort_order_blue_red_white, 26);
-              post_event(controller_stopped, 19);
+              if (is_controller_started) {
+                post_event(controller_started, 19);
+              }
+              else {
+                post_event(controller_stopped, 19);
+              }
               if (is_conveyor_running) {
                 post_event(conveyor_running, 17);
               }
