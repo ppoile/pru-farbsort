@@ -322,6 +322,11 @@ void on_input_change(uint32_t mask, bool value)
       post_event(lightbarrier1_off, 18);
       schedule_adc_action(now + 111);
     }
+    if (verbose) {
+      char buffer[] = "now=0xXXXXXXXX\n";
+      appendNumber(&buffer[6], now);
+      post_event(buffer, 15);
+    }
   }
   else if (mask == LIGHTBARRIER2_MASK) {
     if (now - lightbarrier2_last_change < 5) {
@@ -359,6 +364,11 @@ void on_input_change(uint32_t mask, bool value)
     }
     else {
       post_event(lightbarrier2_off, 18);
+    }
+    if (verbose) {
+      char buffer[] = "now=0xXXXXXXXX\n";
+      appendNumber(&buffer[6], now);
+      post_event(buffer, 15);
     }
   }
 
