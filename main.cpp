@@ -108,9 +108,9 @@ static const char emergency_stop_off[] = "emergency-stop=off\n";
 
 static const uint32_t ADC_LIMIT_TOLERANCE = 60;
 static const uint32_t ADC_NO_OBJECT_LIMIT = 0x4be;
-static const uint32_t ADC_BLUE_OBJECT_LIMIT = 0x49a;
-static const uint32_t ADC_RED_OBJECT_LIMIT = 0x343;
-static const uint32_t ADC_WHITE_OBJECT_LIMIT = 0x307;
+static const uint32_t ADC_BLUE_OBJECT_LIMIT = 0x49c;
+static const uint32_t ADC_RED_OBJECT_LIMIT = 0x32a;
+static const uint32_t ADC_WHITE_OBJECT_LIMIT = 0x2ef;
 
 enum Mode { MODE_NORMAL, MODE_DIAGNOSTIC };
 static const char mode_normal[] = "mode=normal\n";
