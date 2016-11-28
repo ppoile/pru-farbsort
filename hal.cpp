@@ -19,5 +19,5 @@ const uint32_t LIGHTBARRIERS3_TO_5_MASK = 0x4;
 
 uint32_t get_all_inputs()
 {
-  return __R31 & ~LIGHTBARRIERS3_TO_5_MASK;
+  return __R31;
 }
