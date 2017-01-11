@@ -10,7 +10,7 @@ http://software-dl.ti.com/processor-sw/esd/PROCESSOR-SDK-LINUX-AM335X/03_01_00_0
 
 Download and unpack:
 https://git.ti.com/pru-software-support-package/pru-software-support-package/archive-tarball/v4.0.2
-...and rename top-directory to ~/prg/ti-processor-sdk-linux-am335x-evm-03.01.00.06/example-applications/pru-icss-4.02
+...and rename top-directory to ~/prg/ti-processor-sdk-linux-am335x-evm-03.01.00.06/example-applications/pru-icss-4.0.2
 
 Patch pru-icss-4.0.2:
 ```
