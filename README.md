@@ -50,6 +50,6 @@ patch -p1 0001-pru_virtio_ring-make-it-compile.patch
 
 Build:
 ```
-$ source setup-ti-env.ch
+$ source setup-ti-env.sh
 $ make
 ```
