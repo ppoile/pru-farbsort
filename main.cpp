@@ -32,11 +32,10 @@
  */
 
 #include <list>
-#include <string>
 
 #include <stdint.h>
 #include <stdio.h>
-#include <string.h>
+//#include <string.h>
 
 extern "C" {
 #include <pru_cfg.h>
@@ -53,6 +52,7 @@ extern "C" {
 #include "scheduled_output_action.h"
 #include "timer.h"
 #include "util.h"
+#include "msg_definition.h"
 
 
 volatile register uint32_t __R30;
@@ -90,22 +90,6 @@ volatile register uint32_t __R31;
 
 uint8_t payload[RPMSG_BUF_SIZE];
 
-static const char motor_stop[] = "motor=stop\n";
-static const char motor_start[] = "motor=start\n";
-static const char valve1_on[] = "valve1=on\n";
-static const char valve1_off[] = "valve1=off\n";
-static const char valve2_on[] = "valve2=on\n";
-static const char valve2_off[] = "valve2=off\n";
-static const char valve3_on[] = "valve3=on\n";
-static const char valve3_off[] = "valve3=off\n";
-
-static const char lightbarrier1_on[] = "lightbarrier1=on\n";
-static const char lightbarrier1_off[] = "lightbarrier1=off\n";
-static const char lightbarrier2_on[] = "lightbarrier2=on\n";
-static const char lightbarrier2_off[] = "lightbarrier2=off\n";
-static const char emergency_stop_on[] = "emergency-stop=on\n";
-static const char emergency_stop_off[] = "emergency-stop=off\n";
-
 static const uint32_t ADC_LIMIT_TOLERANCE = 60;
 static const uint32_t ADC_NO_OBJECT_LIMIT = 0x4be;
 static const uint32_t ADC_BLUE_OBJECT_LIMIT = 0x49c;
@@ -113,23 +97,13 @@ static const uint32_t ADC_RED_OBJECT_LIMIT = 0x32a;
 static const uint32_t ADC_WHITE_OBJECT_LIMIT = 0x2ef;
 
 enum Mode { MODE_NORMAL, MODE_DIAGNOSTIC };
-static const char mode_normal[] = "mode=normal\n";
-static const char mode_diagnostic[] = "mode=diagnostic\n";
-static const char controller_stopped[] = "controller=stopped\n";
-static const char controller_started[] = "controller=started\n";
-static const char conveyor_running[] = "conveyor=running\n";
-static const char conveyor_stopped[] = "conveyor=stopped\n";
 
 enum Color { BLUE, RED, WHITE, UNKNOWN };
 enum SortOrder { BLUE_RED_WHITE };
 
-static const char sort_order_blue_red_white[] = "sort-order=blue-red-white\n";
-
-static const char verbose_on[] = "verbose=on\n";
-static const char verbose_off[] = "verbose=off\n";
 
 Mode mode;
-SortOrder sort_order;
+
 bool is_controller_started;
 bool rpmsg_connected;
 uint32_t pulsecounter_last_change;
@@ -155,6 +129,14 @@ int16_t post_event(char const *event, uint16_t length)
     return -4; //RPMSG_NOT_CONNECTED
   }
   return pru_rpmsg_send(&transport, dst, src, (void*)event, length);
+}
+
+int16_t post_info(char info)
+{
+  if (!rpmsg_connected) {
+    return -4; //RPMSG_NOT_CONNECTED
+  }
+  return pru_rpmsg_send(&transport, dst, src, (void*)&info, 1);
 }
 
 std::list<ScheduledOutputAction> pusher_actions;
@@ -190,16 +172,16 @@ void check_scheduled_pusher_actions()
   buffer[length] = '=';
   length += 1;
   if (next_action.value) {
-    strcpy(&buffer[length], "on");
+    //strcpy(&buffer[length], "on");
     length += 2;
   }
   else {
-    strcpy(&buffer[length], "off");
+    //strcpy(&buffer[length], "off");
     length += 3;
   }
   buffer[length] = '\n';
   length += 1;
-  post_event(buffer, length);
+  //post_event(buffer, length);
   if (next_action.value) {
     __R30 |= next_action.bitmask;
   }
@@ -240,7 +222,7 @@ void check_scheduled_adc_actions()
   if (verbose) {
     char buffer[] = "log: adc_min_value=0xXXXXXXXX\n";
     appendNumber(&buffer[21], adc_min_value);
-    post_event(buffer, 30);
+    //post_event(buffer, 30);
   }
   Color color;
   char *color_string;
@@ -274,9 +256,9 @@ void check_scheduled_adc_actions()
     color_length = 1;
   }
   char buffer[12] = "color=";
-  strcpy(&buffer[6], color_string);
+  //strcpy(&buffer[6], color_string);
   buffer[6 + color_length] = '\n';
-  post_event(buffer, 6 + color_length + 1);
+  //post_event(buffer, 6 + color_length + 1);
   if (is_controller_started && (color != UNKNOWN)) {
     detected_colors.push_back(color);
   }
@@ -291,23 +273,23 @@ void on_input_change(uint32_t mask, bool value)
     }
     lightbarriers3_to_5_last_change = now;
     if (value) {
-      post_event(emergency_stop_on, 18);
+      post_info(INFO_EMERGENCY_STOP_ON);
       if (is_controller_started) {
         __R30 &= ~MOTOR_MASK;
-        post_event(motor_stop, 11);
+        post_info(INFO_MOTOR_STOP);
         is_controller_started = false;
-        post_event(controller_stopped, 19);
+        post_info(INFO_CTRL_STOP);
       }
     }
     else {
-      post_event(emergency_stop_off, 19);
+      post_info(INFO_EMERGENCY_STOP_OFF);
     }
   }
   else if (mask == PULSECOUNTER_MASK) {
     pulsecounter_last_change = timer_get_ticks();
     if (!is_conveyor_running) {
       is_conveyor_running = true;
-      post_event(conveyor_running, 17);
+      post_info(INFO_CONVEYER_RUNNING);
     }
   }
   else if (mask == LIGHTBARRIER1_MASK) {
@@ -316,16 +298,16 @@ void on_input_change(uint32_t mask, bool value)
     }
     lightbarrier1_last_change = now;
     if (value) {
-      post_event(lightbarrier1_on, 17);
+      post_info(INFO_LIGHT_BARRIER_1_ON);
     }
     else {
-      post_event(lightbarrier1_off, 18);
+      post_info(INFO_LIGHT_BARRIER_1_OFF);
       schedule_adc_action(now + 111);
     }
     if (verbose) {
       char buffer[] = "now=0xXXXXXXXX\n";
       appendNumber(&buffer[6], now);
-      post_event(buffer, 15);
+      //post_event(buffer, 15);
     }
   }
   else if (mask == LIGHTBARRIER2_MASK) {
@@ -334,10 +316,10 @@ void on_input_change(uint32_t mask, bool value)
     }
     lightbarrier2_last_change = now;
     if (value) {
-      post_event(lightbarrier2_on, 17);
+      post_info(INFO_LIGHT_BARRIER_2_ON);
       if (is_controller_started) {
         if (detected_colors.size() == 0) {
-          post_event("debug: No colored object detected. Letting it pass...\n", 54);
+          //post_event("debug: No colored object detected. Letting it pass...\n", 54);
         }
         else {
           Color color = detected_colors.front();
@@ -363,12 +345,12 @@ void on_input_change(uint32_t mask, bool value)
       }
     }
     else {
-      post_event(lightbarrier2_off, 18);
+      post_info(INFO_LIGHT_BARRIER_2_OFF);
     }
     if (verbose) {
       char buffer[] = "now=0xXXXXXXXX\n";
       appendNumber(&buffer[6], now);
-      post_event(buffer, 15);
+      //post_event(buffer, 15);
     }
   }
 
@@ -400,7 +382,7 @@ void process_inputs(uint32_t all_inputs_value)
     int32_t ticks_since_last_change = now - pulsecounter_last_change;
     if (ticks_since_last_change > 100) {
       is_conveyor_running = false;
-      post_event(conveyor_stopped, 17);
+      post_info(INFO_CONVEYER_STOPPED);
     }
   }
 }
@@ -410,9 +392,221 @@ bool get_last_input(uint32_t mask)
   return last_all_inputs_value & mask;
 }
 
+static void handleCmdConnect()
+{
+    if (__R30 & MOTOR_MASK) {
+      post_info(INFO_MOTOR_START);
+    }
+    else {
+      post_info(INFO_MOTOR_STOP);
+    }
+    if (__R30 & VALVE1_MASK) {
+      post_info(INFO_VALVE_1_ON);
+    }
+    else {
+      post_info(INFO_VALVE_1_OFF);
+    }
+    if (__R30 & VALVE2_MASK) {
+      post_info(INFO_VALVE_2_ON);
+    }
+    else {
+      post_info(INFO_VALVE_2_OFF);
+    }
+    if (__R30 & VALVE3_MASK) {
+      post_info(INFO_VALVE_3_ON);
+    }
+    else {
+      post_info(INFO_VALVE_3_OFF);
+    }
+    if (mode == MODE_NORMAL) {
+      post_info(INFO_MODE_NORMAL);
+    }
+    else {
+      post_info(INFO_MODE_DIAGNOSTIC);
+    }
+    if (is_controller_started) {
+      post_info(INFO_CTRL_START);
+    }
+    else {
+      post_info(INFO_CTRL_STOP);
+    }
+    if (verbose) {
+      post_info(INFO_VERBOSE_ON);
+    }
+    else {
+      post_info(INFO_VERBOSE_OFF);
+    }
+    if (is_conveyor_running) {
+      post_info(INFO_CONVEYER_RUNNING);
+    }
+    else {
+      post_info(INFO_CONVEYER_STOPPED);
+    }
+    if (get_last_input(LIGHTBARRIER1_MASK)) {
+      post_info(INFO_LIGHT_BARRIER_1_ON);
+    }
+    else {
+      post_info(INFO_LIGHT_BARRIER_1_OFF);
+    }
+    if (get_last_input(LIGHTBARRIER2_MASK)) {
+      post_info(INFO_LIGHT_BARRIER_2_ON);
+    }
+    else {
+      post_info(INFO_LIGHT_BARRIER_2_OFF);
+    }
+    if (get_last_input(LIGHTBARRIERS3_TO_5_MASK)) {
+      post_info(INFO_EMERGENCY_STOP_ON);
+    }
+    else {
+      post_info(INFO_EMERGENCY_STOP_OFF);
+    }
+}
+
+static void handleCmdDisconnect()
+{
+    __R30 &= ~MOTOR_MASK;
+    __R30 &= ~VALVE1_MASK;
+    __R30 &= ~VALVE2_MASK;
+    __R30 &= ~VALVE3_MASK;
+    mode = MODE_NORMAL;
+    is_controller_started = false;
+    rpmsg_connected = false;
+}
+
+static void handleCmdModeNormal()
+{
+    __R30 &= ~MOTOR_MASK;
+    post_info(INFO_MOTOR_STOP);
+    __R30 &= ~VALVE1_MASK;
+    post_info(INFO_VALVE_1_OFF);
+    __R30 &= ~VALVE2_MASK;
+    post_info(INFO_VALVE_2_OFF);
+    __R30 &= ~VALVE3_MASK;
+    post_info(INFO_VALVE_3_OFF);
+    is_controller_started = false;
+    post_info(INFO_CTRL_STOP);
+    mode = MODE_NORMAL;
+}
+
+static void handleCmdModeDiagnostic()
+{
+    if (is_controller_started) {
+      __R30 &= ~MOTOR_MASK;
+      post_info(INFO_MOTOR_STOP);
+      is_controller_started = false;
+      post_info(INFO_CTRL_STOP);
+    }
+    mode = MODE_DIAGNOSTIC;
+}
+
+static void checkArmToPruMsg()
+{
+    /* Check bit 30 of register R31 to see if the mailbox interrupt has occurred */
+    if (__R31 & HOST_INT) {
+      /* Clear the mailbox interrupt */
+      CT_MBX.IRQ[MB_USER].STATUS_CLR |= 1 << (MB_FROM_ARM_HOST * 2);
+
+      /* Clear the event status, event MB_INT_NUMBER corresponds to the mailbox interrupt */
+      CT_INTC.SICR_bit.STS_CLR_IDX = MB_INT_NUMBER;
+
+      /* Use a while loop to read all of the current messages in the mailbox */
+      while (CT_MBX.MSGSTATUS_bit[MB_FROM_ARM_HOST].NBOFMSG > 0) {
+        /* Check to see if the message corresponds to a receive event for the PRU */
+        if (CT_MBX.MESSAGE[MB_FROM_ARM_HOST] == 1) {
+          /* Receive the message */
+          if (pru_rpmsg_receive(&transport, &src, &dst, payload, &len) == PRU_RPMSG_SUCCESS) {
+
+            rpmsg_connected = true;
+            bool skip_echo = false;
+
+            if (payload[0] == CMD_CONNECT) {
+              handleCmdConnect();
+            }
+
+            if (payload[0] == CMD_DISCONNECT) {
+              handleCmdDisconnect();
+            }
+            if (!verbose) {
+              if(payload[0] == CMD_VERBOSE_ON) {
+                verbose = true;
+              }
+            }
+            if (verbose) {
+              if (payload[0] == CMD_VERBOSE_OFF) {
+                verbose = false;
+              }
+            }
+            if (mode == MODE_DIAGNOSTIC) {
+              if (payload[0] == CMD_MODE_NORMAL) {
+                handleCmdModeNormal();
+              }
+            }
+            if (mode == MODE_NORMAL) {
+              if (payload[0] == CMD_MODE_DIAGNOSTIC) {
+                handleCmdModeDiagnostic();
+              }
+            }
+            if (mode == MODE_NORMAL && !is_controller_started) {
+              if (payload[0] == CMD_START) {
+                if (get_last_input(LIGHTBARRIERS3_TO_5_MASK)) {
+                  skip_echo = true;
+                  //post_event("log: 'emergency-stop=on' prevented start\n", 41);
+                }
+                else {
+                  __R30 |= MOTOR_MASK;
+                  post_info(INFO_MOTOR_START);
+                  is_controller_started = true;
+                  post_info(INFO_CTRL_START);
+                }
+              }
+            }
+            if (is_controller_started) {
+              if (payload[0] == CMD_STOP) {
+                __R30 &= ~MOTOR_MASK;
+                post_info(INFO_MOTOR_STOP);
+                is_controller_started = false;
+                post_info(INFO_CTRL_STOP);
+              }
+            }
+            if (mode == MODE_DIAGNOSTIC) {
+              if (payload[0] == CMD_MOTOR_START) {
+                __R30 |= MOTOR_MASK;
+              }
+              if (payload[0] == CMD_MOTOR_STOP) {
+                __R30 &= ~MOTOR_MASK;
+              }
+              if (payload[0] == CMD_VALVE_1_ON) {
+                __R30 |= VALVE1_MASK;
+              }
+              if (payload[0] == CMD_VALVE_1_OFF) {
+                __R30 &= ~VALVE1_MASK;
+              }
+              if (payload[0] == CMD_VALVE_2_ON) {
+                __R30 |= VALVE2_MASK;
+              }
+              if (payload[0] == CMD_VALVE_2_OFF){
+                __R30 &= ~VALVE2_MASK;
+              }
+              if (payload[0] == CMD_VALVE_3_ON) {
+                __R30 |= VALVE3_MASK;
+              }
+              if (payload[0] == CMD_VALVE_3_OFF) {
+                __R30 &= ~VALVE3_MASK;
+              }
+            }
+
+            if (!skip_echo) {
+              /* Echo the message back to the same address from which we just received */
+              pru_rpmsg_send(&transport, dst, src, payload, len);
+            }
+          }
+        }
+      }
+    }
+}
+
 void main() {
   mode = MODE_NORMAL;
-  sort_order = BLUE_RED_WHITE;
   is_controller_started = false;
   rpmsg_connected = false;
   pulsecounter_last_change = 0;
@@ -458,221 +652,7 @@ void main() {
     timer_poll();
     now = timer_get_ticks();
 
-    /* Check bit 30 of register R31 to see if the mailbox interrupt has occurred */
-    if (__R31 & HOST_INT) {
-      /* Clear the mailbox interrupt */
-      CT_MBX.IRQ[MB_USER].STATUS_CLR |= 1 << (MB_FROM_ARM_HOST * 2);
-
-      /* Clear the event status, event MB_INT_NUMBER corresponds to the mailbox interrupt */
-      CT_INTC.SICR_bit.STS_CLR_IDX = MB_INT_NUMBER;
-
-      /* Use a while loop to read all of the current messages in the mailbox */
-      while (CT_MBX.MSGSTATUS_bit[MB_FROM_ARM_HOST].NBOFMSG > 0) {
-        /* Check to see if the message corresponds to a receive event for the PRU */
-        if (CT_MBX.MESSAGE[MB_FROM_ARM_HOST] == 1) {
-          /* Receive the message */
-          if (pru_rpmsg_receive(&transport, &src, &dst, payload, &len) == PRU_RPMSG_SUCCESS) {
-            uint32_t stripped_len = len;
-            rpmsg_connected = true;
-            bool skip_echo = false;
-            int rc;
-            if (len < RPMSG_BUF_SIZE) {
-              uint32_t pos = len;
-              payload[pos] = '\0';
-              if (pos > 0 ) {
-                pos -= 1;
-                if (payload[pos] == '\r') {
-                  stripped_len = len - 1;
-                }
-              }
-            }
-            rc = strncmp((char*)payload, "connect", stripped_len);
-            if (rc == 0) {
-              if (__R30 & MOTOR_MASK) {
-                post_event(motor_start, 12);
-              }
-              else {
-                post_event(motor_stop, 11);
-              }
-              if (__R30 & VALVE1_MASK) {
-                post_event(valve1_on, 10);
-              }
-              else {
-                post_event(valve1_off, 11);
-              }
-              if (__R30 & VALVE2_MASK) {
-                post_event(valve2_on, 10);
-              }
-              else {
-                post_event(valve2_off, 11);
-              }
-              if (__R30 & VALVE3_MASK) {
-                post_event(valve3_on, 10);
-              }
-              else {
-                post_event(valve3_off, 11);
-              }
-              if (mode == MODE_NORMAL) {
-                post_event(mode_normal, 12);
-              }
-              else {
-                post_event(mode_diagnostic, 16);
-              }
-              post_event(sort_order_blue_red_white, 26);
-              if (is_controller_started) {
-                post_event(controller_started, 19);
-              }
-              else {
-                post_event(controller_stopped, 19);
-              }
-              if (verbose) {
-                post_event(verbose_on, 11);
-              }
-              else {
-                post_event(verbose_off, 12);
-              }
-              if (is_conveyor_running) {
-                post_event(conveyor_running, 17);
-              }
-              else {
-                post_event(conveyor_stopped, 17);
-              }
-              if (get_last_input(LIGHTBARRIER1_MASK)) {
-                post_event(lightbarrier1_on, 17);
-              }
-              else {
-                post_event(lightbarrier1_off, 18);
-              }
-              if (get_last_input(LIGHTBARRIER2_MASK)) {
-                post_event(lightbarrier2_on, 17);
-              }
-              else {
-                post_event(lightbarrier2_off, 18);
-              }
-              if (get_last_input(LIGHTBARRIERS3_TO_5_MASK)) {
-                post_event(emergency_stop_on, 18);
-              }
-              else {
-                post_event(emergency_stop_off, 19);
-              }
-            }
-            rc = strncmp((char*)payload, "disconnect", stripped_len);
-            if (rc == 0) {
-              __R30 &= ~MOTOR_MASK;
-              __R30 &= ~VALVE1_MASK;
-              __R30 &= ~VALVE2_MASK;
-              __R30 &= ~VALVE3_MASK;
-              mode = MODE_NORMAL;
-              is_controller_started = false;
-              rpmsg_connected = false;
-            }
-            if (!verbose) {
-              rc = strncmp((char*)payload, "verbose=on", stripped_len);
-              if (rc == 0) {
-                verbose = true;
-              }
-            }
-            if (verbose) {
-              rc = strncmp((char*)payload, "verbose=off", stripped_len);
-              if (rc == 0) {
-                verbose = false;
-              }
-            }
-            if (mode == MODE_DIAGNOSTIC) {
-              rc = strncmp((char*)payload, "mode=normal", stripped_len);
-              if (rc == 0) {
-                __R30 &= ~MOTOR_MASK;
-                post_event(motor_stop, 11);
-                __R30 &= ~VALVE1_MASK;
-                post_event(valve1_off, 11);
-                __R30 &= ~VALVE2_MASK;
-                post_event(valve2_off, 11);
-                __R30 &= ~VALVE3_MASK;
-                post_event(valve3_off, 11);
-                is_controller_started = false;
-                post_event(controller_stopped, 19);
-                mode = MODE_NORMAL;
-              }
-            }
-            if (mode == MODE_NORMAL) {
-              rc = strncmp((char*)payload, "mode=diagnostic", stripped_len);
-              if (rc == 0) {
-                if (is_controller_started) {
-                  __R30 &= ~MOTOR_MASK;
-                  post_event(motor_stop, 11);
-                  is_controller_started = false;
-                  post_event(controller_stopped, 19);
-                }
-                mode = MODE_DIAGNOSTIC;
-              }
-            }
-            if (mode == MODE_NORMAL && !is_controller_started) {
-              rc = strncmp((char*)payload, "start", stripped_len);
-              if (rc == 0) {
-                if (get_last_input(LIGHTBARRIERS3_TO_5_MASK)) {
-                  skip_echo = true;
-                  post_event("log: 'emergency-stop=on' prevented start\n", 41);
-                }
-                else {
-                  __R30 |= MOTOR_MASK;
-                  post_event(motor_start, 12);
-                  is_controller_started = true;
-                  post_event(controller_started, 19);
-                }
-              }
-            }
-            if (is_controller_started) {
-              rc = strncmp((char*)payload, "stop", stripped_len);
-              if (rc == 0) {
-                __R30 &= ~MOTOR_MASK;
-                post_event(motor_stop, 11);
-                is_controller_started = false;
-                post_event(controller_stopped, 19);
-              }
-            }
-            if (mode == MODE_DIAGNOSTIC) {
-              rc = strncmp((char*)payload, "motor=start", stripped_len);
-              if (rc == 0) {
-                __R30 |= MOTOR_MASK;
-              }
-              rc = strncmp((char*)payload, "motor=stop", stripped_len);
-              if (rc == 0) {
-                __R30 &= ~MOTOR_MASK;
-              }
-              rc = strncmp((char*)payload, "valve1=on", stripped_len);
-              if (rc == 0) {
-                __R30 |= VALVE1_MASK;
-              }
-              rc = strncmp((char*)payload, "valve1=off", stripped_len);
-              if (rc == 0) {
-                __R30 &= ~VALVE1_MASK;
-              }
-              rc = strncmp((char*)payload, "valve2=on", stripped_len);
-              if (rc == 0) {
-                __R30 |= VALVE2_MASK;
-              }
-              rc = strncmp((char*)payload, "valve2=off", stripped_len);
-              if (rc == 0) {
-                __R30 &= ~VALVE2_MASK;
-              }
-              rc = strncmp((char*)payload, "valve3=on", stripped_len);
-              if (rc == 0) {
-                __R30 |= VALVE3_MASK;
-              }
-              rc = strncmp((char*)payload, "valve3=off", stripped_len);
-              if (rc == 0) {
-                __R30 &= ~VALVE3_MASK;
-              }
-            }
-
-            if (!skip_echo) {
-              /* Echo the message back to the same address from which we just received */
-              pru_rpmsg_send(&transport, dst, src, payload, len);
-            }
-          }
-        }
-      }
-    }
+    checkArmToPruMsg();
     process_inputs(get_all_inputs());
     check_scheduled_pusher_actions();
     check_scheduled_adc_actions();
