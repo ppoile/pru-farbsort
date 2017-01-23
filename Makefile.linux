@@ -1,0 +1,17 @@
+CC=g++
+CFLAGS=-c -Wall
+LDFLAGS=
+SOURCES= tests/tests.cpp
+OBJECTS=$(SOURCES:.cpp=.o)
+EXECUTABLE=tests/tests
+INCLUDES=googletest/googletest/include
+LIBPATH=googletest/lib/googlemock/gtest
+LIB=-lgtest -lpthread
+
+all: $(SOURCES) $(EXECUTABLE)
+    
+$(EXECUTABLE): $(OBJECTS) 
+	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ -L$(LIBPATH) $(LIB)
+
+.cpp.o:
+	$(CC) -pthread -I $(INCLUDES) $(CFLAGS) $< -o $@

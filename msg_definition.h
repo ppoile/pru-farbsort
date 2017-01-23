@@ -5,8 +5,8 @@
 
 typedef enum
 {
-    CMD_CONNECT = 1,
-    CMD_DISCONNECT = 2,
+    CMD_GET_ALL_INFO = 1,
+    CMD_RESET = 2,
     CMD_VERBOSE_ON = 3,
     CMD_VERBOSE_OFF = 4,
     CMD_MODE_NORMAL = 5,
@@ -39,6 +39,8 @@ typedef enum
     INFO_VALVE_2_OFF = 0x80 + 0xE,
     INFO_VALVE_3_ON = 0x80 + 0xF,
     INFO_VALVE_3_OFF = 0x80 + 0x10,
+    INFO_COMPRESSOR_START = 0x80 + 0x11,
+    INFO_COMPRESSOR_STOP = 0x80 + 0x12,
 
     INFO_EMERGENCY_STOP_ON = 0x80 + 0x20,
     INFO_EMERGENCY_STOP_OFF = 0x80 + 0x21,
@@ -50,5 +52,7 @@ typedef enum
 
     INFO_LIGHT_BARRIER_2_ON = 0x80 + 0x32,
     INFO_LIGHT_BARRIER_2_OFF = 0x80 + 0x33,
+
+    INFO_COLOR_DETECT = 0x80 + 0x40
 
 } Commands;
