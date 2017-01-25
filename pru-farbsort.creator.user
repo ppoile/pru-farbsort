@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 3.5.1, 2017-01-20T17:00:05. -->
+<!-- Written by QtCreator 3.5.1, 2017-01-25T08:09:24. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -282,7 +282,7 @@
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
-      <value type="QString" key="ProjectExplorer.ProcessStep.Arguments">gen/pru-farbsort.out root@192.168.35.115:/lib/firmware/am335x-pru0-fw</value>
+      <value type="QString" key="ProjectExplorer.ProcessStep.Arguments">gen/pru-farbsort.out root@192.168.35.152:/lib/firmware/am335x-pru0-fw</value>
       <value type="QString" key="ProjectExplorer.ProcessStep.Command">scp</value>
       <value type="QString" key="ProjectExplorer.ProcessStep.WorkingDirectory">%{buildDir}</value>
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Custom Process Step</value>

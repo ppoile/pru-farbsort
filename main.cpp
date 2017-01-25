@@ -31,11 +31,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <list>
 
 #include <stdint.h>
 #include <stdio.h>
-//#include <string.h>
+
 
 extern "C" {
 #include <pru_cfg.h>
@@ -59,6 +58,9 @@ extern "C" {
 #include "motor.h"
 #include "piston.h"
 #include "hw.h"
+#include "queue.h"
+#include "compressor.h"
+#include "command_interface.h"
 
 
 volatile register uint32_t __R30;
@@ -96,6 +98,7 @@ volatile register uint32_t __R31;
 
 uint8_t payload[RPMSG_BUF_SIZE];
 
+
 static const uint32_t ADC_LIMIT_TOLERANCE = 60;
 static const uint32_t ADC_NO_OBJECT_LIMIT = 0x4be;
 static const uint32_t ADC_BLUE_OBJECT_LIMIT = 0x49c;
@@ -124,24 +127,27 @@ uint32_t lightbarrier2_last_change;
 uint32_t lightbarriers3_to_5_last_change;
 
 Motor motor(MOTOR_MASK);
+//Compressor compressor(MOTOR_MASK)
 Piston piston[] = { Piston(VALVE1_MASK), Piston(VALVE2_MASK), Piston(VALVE3_MASK) };
 LightBarrier lightBarrier[] = { LightBarrier(LIGHTBARRIER1_MASK), LightBarrier(LIGHTBARRIER2_MASK), LightBarrier(LIGHTBARRIERS3_TO_5_MASK) };
 
 
 Hw hw(motor,
-            piston[0],
-            piston[1],
-            piston[2],
-            lightBarrier[0],
-            lightBarrier[1],
-            lightBarrier[2]);
+      //compressor
+        piston[0],
+        piston[1],
+        piston[2],
+        lightBarrier[0],
+        lightBarrier[1],
+        lightBarrier[2]);
 
 
 
 Controller ctrl(hw);
+//Timer timer;
 
+Queue<Color,3> detected_colors;
 
-std::list<Color> detected_colors;
 
 bool verbose;
 
@@ -161,16 +167,22 @@ int16_t post_info(char info)
   return pru_rpmsg_send(&transport, dst, src, (void*)&info, 1);
 }
 
+/*
+ * @todo implement again
 std::list<ScheduledOutputAction> pusher_actions;
-
+*/
 void schedule_pusher_action(uint32_t timestamp, uint32_t bitmask, bool value)
 {
   ScheduledOutputAction action(timestamp, bitmask, value);
-  pusher_actions.push_back(action);
+  // @todo implement again
+  //pusher_actions.push_back(action);
 }
 
 void check_scheduled_pusher_actions()
 {
+  return;
+  /*
+   * @todo reimplement
   if (pusher_actions.size() == 0) {
     return;
   }
@@ -211,17 +223,22 @@ void check_scheduled_pusher_actions()
     __R30 &= ~next_action.bitmask;
   }
   pusher_actions.pop_front();
+  */
 }
 
-std::list<uint32_t> adc_actions;
+// @reimplement
+//std::list<uint32_t> adc_actions;
 
 void schedule_adc_action(uint32_t timestamp)
 {
-  adc_actions.push_back(timestamp);
+  // @todo reimplement
+    //adc_actions.push_back(timestamp);
 }
 
 void check_scheduled_adc_actions()
 {
+  return;
+  /*
   if (adc_actions.size() == 0) {
     return;
   }
@@ -288,6 +305,7 @@ void check_scheduled_adc_actions()
     detected_colors.push_back(color);
   }
   adc_min_value = 0xFFFF;
+  */
 }
 
 void on_input_change(uint32_t mask, bool value)
@@ -343,12 +361,11 @@ void on_input_change(uint32_t mask, bool value)
     if (value) {
       post_info(INFO_LIGHT_BARRIER_2_ON);
       if (is_controller_started) {
-        if (detected_colors.size() == 0) {
+        if (detected_colors.isEmpty()) {
           //post_event("debug: No colored object detected. Letting it pass...\n", 54);
         }
         else {
-          Color color = detected_colors.front();
-          detected_colors.pop_front();
+          Color color = detected_colors.pull();
           switch (color) {
             case BLUE:
               schedule_pusher_action(now + 69, VALVE1_MASK, true);
@@ -462,6 +479,22 @@ static void checkArmToPruMsg()
     }
 }
 
+class MessageAction: public CommandInterface
+{
+    void execute()
+    {
+        char buffer[4];
+        buffer[0] = VERSION_MAJOR;
+        buffer[1] = VERSION_MINOR;
+        buffer[2] = '\r';
+        buffer[3] = '\n';
+        post_event(buffer, 4);
+        //timer.schedule(this,100);
+    }
+};
+
+MessageAction messageAction;
+
 void main() {
   is_controller_started = false;
   rpmsg_connected = false;
@@ -502,11 +535,14 @@ void main() {
   /* Create the RPMsg channel between the PRU and ARM user space using the transport structure. */
   while (pru_rpmsg_channel(RPMSG_NS_CREATE, &transport, CHAN_NAME, CHAN_DESC, CHAN_PORT) != PRU_RPMSG_SUCCESS);
 
+  adc_init();
   timer_start();
+  //timer.schedule(&messageAction,1000);
 
   while (1) {
     timer_poll();
     now = timer_get_ticks();
+    //timer.poll();
 
     checkArmToPruMsg();
     process_inputs(get_all_inputs());

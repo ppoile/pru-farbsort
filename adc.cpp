@@ -12,6 +12,7 @@ namespace {
   const uint32_t FIFO1DATA = 0x200;
   const uint32_t ADCSTAT = 0x44;
   const uint32_t STEPENABLE = 0x54;
+  const uint32_t FSM_BUSY = (1<<5);
 
   uint32_t register_read(uint32_t offset)
   {
@@ -26,12 +27,12 @@ namespace {
 
 void adc_init()
 {
-  register_write(ADC_CLKDIV, 8-1);
-  register_write(CTRL, 6);
-  register_write(CTRL, 7);
-  register_write(STEPCONFIG1, 0x04000008);
-  register_write(STEPDELAY1, 0x0f000098);
-  register_write(FIFO1THRESHOLD, 20-1);
+  register_write(ADC_CLKDIV, 8-1);      // ACD clock will be divided by
+  register_write(CTRL, 6);  // step config registers writable, store the channel id tag in the adc fifo
+  register_write(CTRL, 7);  // turn on TSC_ADC_SS.
+  register_write(STEPCONFIG1, 0x04000008);  // fifo1, channel 1, 4 sample average, SW enabled, one-shot
+  register_write(STEPDELAY1, 0x0f000098);   // sample delay 0xf clock cycles, open delay 0x98
+  register_write(FIFO1THRESHOLD, 20-1);     // fifo threshold level 20
 }
 
 uint16_t adc_read()
@@ -39,7 +40,7 @@ uint16_t adc_read()
   while (register_read(FIFO1COUNT) > 0) {
     (void)register_read(FIFO1DATA);
   }
-  while (register_read(ADCSTAT) & (1<<5)) {
+  while (register_read(ADCSTAT) & FSM_BUSY) {
   }
   register_write(STEPENABLE, 0x2);
   while (register_read(FIFO1COUNT) < 1) {

@@ -44,3 +44,5 @@ version.h
 hw.h
 compressor.h
 compressor.cpp
+queue.h
+command_interface.h

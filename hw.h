@@ -2,6 +2,7 @@
 #define HW
 
 class Motor;
+class Compressor;
 class LightBarrier;
 class Piston;
 
@@ -16,6 +17,7 @@ struct Hw
     LightBarrier &lightBarrierEmergencyStop;
 
     Hw(Motor &motor,
+       //Compressor &compressor,
         Piston &piston0,
         Piston &piston1,
         Piston &piston2,

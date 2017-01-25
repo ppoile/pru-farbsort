@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <pru_iep.h>
 #include <pru_intc.h>
-
+#include "command_interface.h"
 
 volatile register uint32_t __R31;
 
@@ -82,3 +82,52 @@ uint32_t timer_get_ticks()
 {
   return ticks;
 }
+
+
+Timer::Timer()
+{
+    for (int i = 0; i < TIMER_MAX_SCHEDULES; i++)
+    {
+        registration[i].ticks = 0; // mark as free
+    }
+}
+
+
+void Timer::schedule(CommandInterface *command, int ticks)
+{
+    for (int i = 0; i < TIMER_MAX_SCHEDULES; i++)
+    {
+        if(registration[i].ticks == 0)
+        {
+            registration[i].command = command;
+            registration[i].ticks = ticks;
+            break;
+        }
+        else
+        {
+            // @todo error handling, what to do when too many registrations
+        }
+    }
+
+}
+
+void Timer::poll()
+{
+    int currentTimer = ticks;
+    int diff = currentTimer - lastTimer;
+    for (int i = 0; i < TIMER_MAX_SCHEDULES; i++)
+    {
+        if(registration[i].ticks > diff)
+        {
+            registration[i].ticks -= diff;
+        }
+        else if (registration[i].ticks > 0)
+        {
+            registration[i].ticks = 0;
+            registration[i].command->execute();
+        }
+    }
+    lastTimer = currentTimer;
+}
+
+

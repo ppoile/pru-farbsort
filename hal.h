@@ -16,4 +16,5 @@ extern const uint32_t LIGHTBARRIER2_MASK;
 extern const uint32_t LIGHTBARRIERS3_TO_5_MASK;
 
 
+
 uint32_t get_all_inputs();
