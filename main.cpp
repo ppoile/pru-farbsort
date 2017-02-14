@@ -37,11 +37,11 @@
 
 
 extern "C" {
+#include <stdint.h>
+#include <stdio.h>
 #include <pru_cfg.h>
 #include <pru_intc.h>
 #include <rsc_types.h>
-#include <sys_mailbox.h>
-#include <pru_virtqueue.h>
 #include <pru_rpmsg.h>
 #include "resource_table_0.h"
 }
@@ -67,20 +67,16 @@ volatile register uint32_t __R30;
 volatile register uint32_t __R31;
 
 
-/* PRU0 is mailbox module user 1 */
-#define MB_USER						1
-/* Mbox0 - mail_u1_irq (mailbox interrupt for PRU0) is Int Number 60 */
-#define MB_INT_NUMBER				60
-
 /* Host-0 Interrupt sets bit 30 in register R31 */
-#define HOST_INT					0x40000000
+#define HOST_INT			((uint32_t) 1 << 30)
 
-/* The mailboxes used for RPMsg are defined in the Linux device tree
- * PRU0 uses mailboxes 2 (From ARM) and 3 (To ARM)
- * PRU1 uses mailboxes 4 (From ARM) and 5 (To ARM)
+
+/* The PRU-ICSS system events used for RPMsg are defined in the Linux device tree
+ * PRU0 uses system event 16 (To ARM) and 17 (From ARM)
+ * PRU1 uses system event 18 (To ARM) and 19 (From ARM)
  */
-#define MB_TO_ARM_HOST				3
-#define MB_FROM_ARM_HOST			2
+#define TO_ARM_HOST			16
+#define FROM_ARM_HOST		17
 
 /*
  * Using the name 'rpmsg-pru' will probe the rpmsg_pru driver found
@@ -438,25 +434,19 @@ bool get_last_input(uint32_t mask)
 static void checkArmToPruMsg()
 {
     /* Check bit 30 of register R31 to see if the mailbox interrupt has occurred */
-    if (__R31 & HOST_INT) {
-      /* Clear the mailbox interrupt */
-      CT_MBX.IRQ[MB_USER].STATUS_CLR |= 1 << (MB_FROM_ARM_HOST * 2);
+    if (__R31 & HOST_INT)
+    {
+        /* Clear the event status */
+        CT_INTC.SICR_bit.STS_CLR_IDX = FROM_ARM_HOST;
 
-      /* Clear the event status, event MB_INT_NUMBER corresponds to the mailbox interrupt */
-      CT_INTC.SICR_bit.STS_CLR_IDX = MB_INT_NUMBER;
 
-      /* Use a while loop to read all of the current messages in the mailbox */
-      while (CT_MBX.MSGSTATUS_bit[MB_FROM_ARM_HOST].NBOFMSG > 0) {
-        /* Check to see if the message corresponds to a receive event for the PRU */
-        if (CT_MBX.MESSAGE[MB_FROM_ARM_HOST] == 1) {
-          /* Receive the message */
-          if (pru_rpmsg_receive(&transport, &src, &dst, payload, &len) == PRU_RPMSG_SUCCESS) {
-
+        /* Use a while loop to read all of the current messages in the mailbox */
+        while (pru_rpmsg_receive(&transport, &src, &dst, payload, &len) == PRU_RPMSG_SUCCESS)
+        {
             rpmsg_connected = true;
             bool skip_echo = false;
 
             ctrl.processCmd((payload[0]));
-
 
             if (!verbose) {
               if(payload[0] == CMD_VERBOSE_ON) {
@@ -473,9 +463,7 @@ static void checkArmToPruMsg()
               /* Echo the message back to the same address from which we just received */
               pru_rpmsg_send(&transport, dst, src, payload, len);
             }
-          }
         }
-      }
     }
 }
 
@@ -496,7 +484,7 @@ class MessageAction: public CommandInterface
 MessageAction messageAction;
 
 void main() {
-  is_controller_started = false;
+/*  is_controller_started = false;
   rpmsg_connected = false;
   pulsecounter_last_change = 0;
   is_conveyor_running = false;
@@ -514,39 +502,57 @@ void main() {
   verbose = false;
 
   volatile uint8_t *status;
-
+*/
     /* allow OCP master port access by the PRU so the PRU can read external memories */
-  CT_CFG.SYSCFG_bit.STANDBY_INIT = 0;
+//  CT_CFG.SYSCFG_bit.STANDBY_INIT = 0;
 
   /* clear the status of event MB_INT_NUMBER (the mailbox event) and enable the mailbox event */
-  CT_INTC.SICR_bit.STS_CLR_IDX = MB_INT_NUMBER;
+/*  CT_INTC.SICR_bit.STS_CLR_IDX = MB_INT_NUMBER;
   CT_MBX.IRQ[MB_USER].ENABLE_SET |= 1 << (MB_FROM_ARM_HOST * 2);
+*/
+  /* Make sure the Linux drivers are ready for RPMsg communication */
+/*  status = &resourceTable.rpmsg_vdev.status;
+  while (!(*status & VIRTIO_CONFIG_S_DRIVER_OK));
+*/
+  /* Initialize pru_virtqueue corresponding to vring0 (PRU to ARM Host direction) */
+  //pru_virtqueue_init(&transport.virtqueue0, &resourceTable.rpmsg_vring0, &CT_MBX.MESSAGE[MB_TO_ARM_HOST], &CT_MBX.MESSAGE[MB_FROM_ARM_HOST]);
+
+  /* Initialize pru_virtqueue corresponding to vring1 (ARM Host to PRU direction) */
+  //pru_virtqueue_init(&transport.virtqueue1, &resourceTable.rpmsg_vring1, &CT_MBX.MESSAGE[MB_TO_ARM_HOST], &CT_MBX.MESSAGE[MB_FROM_ARM_HOST]);
+
+
+  //struct pru_rpmsg_transport transport;
+  uint16_t src, dst, len;
+  volatile uint8_t *status;
+
+  /* Allow OCP master port access by the PRU so the PRU can read external memories */
+  CT_CFG.SYSCFG_bit.STANDBY_INIT = 0;
+
+  /* Clear the status of the PRU-ICSS system event that the ARM will use to 'kick' us */
+  CT_INTC.SICR_bit.STS_CLR_IDX = FROM_ARM_HOST;
 
   /* Make sure the Linux drivers are ready for RPMsg communication */
   status = &resourceTable.rpmsg_vdev.status;
   while (!(*status & VIRTIO_CONFIG_S_DRIVER_OK));
 
-  /* Initialize pru_virtqueue corresponding to vring0 (PRU to ARM Host direction) */
-  pru_virtqueue_init(&transport.virtqueue0, &resourceTable.rpmsg_vring0, &CT_MBX.MESSAGE[MB_TO_ARM_HOST], &CT_MBX.MESSAGE[MB_FROM_ARM_HOST]);
-
-  /* Initialize pru_virtqueue corresponding to vring1 (ARM Host to PRU direction) */
-  pru_virtqueue_init(&transport.virtqueue1, &resourceTable.rpmsg_vring1, &CT_MBX.MESSAGE[MB_TO_ARM_HOST], &CT_MBX.MESSAGE[MB_FROM_ARM_HOST]);
+  /* Initialize the RPMsg transport structure */
+  pru_rpmsg_init(&transport, &resourceTable.rpmsg_vring0, &resourceTable.rpmsg_vring1, TO_ARM_HOST, FROM_ARM_HOST);
 
   /* Create the RPMsg channel between the PRU and ARM user space using the transport structure. */
   while (pru_rpmsg_channel(RPMSG_NS_CREATE, &transport, CHAN_NAME, CHAN_DESC, CHAN_PORT) != PRU_RPMSG_SUCCESS);
 
-  adc_init();
-  timer_start();
+  //adc_init();
+  //timer_start();
   //timer.schedule(&messageAction,1000);
 
   while (1) {
-    timer_poll();
-    now = timer_get_ticks();
+    //timer_poll();
+    //now = timer_get_ticks();
     //timer.poll();
 
     checkArmToPruMsg();
-    process_inputs(get_all_inputs());
-    check_scheduled_pusher_actions();
-    check_scheduled_adc_actions();
+    //process_inputs(get_all_inputs());
+    //check_scheduled_pusher_actions();
+    //check_scheduled_adc_actions();
   }
 }

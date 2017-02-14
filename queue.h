@@ -14,7 +14,7 @@ private:
 public:
     Queue(): head(0), tail(0), full(false){}
 
-    push(T object)
+    void push(T object)
     {
         if(full) return;
         array[head];
