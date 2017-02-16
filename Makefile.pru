@@ -30,7 +30,7 @@ LFLAGS=--reread_libs --warn_sections --stack_size=$(STACK_SIZE) --heap_size=$(HE
 TARGET=$(GEN_DIR)/$(PROJ_NAME).out
 MAP=$(GEN_DIR)/$(PROJ_NAME).map
 #Using .object instead of .obj in order to not conflict with the CCS build process
-OBJECTS=$(GEN_DIR)/main.object $(GEN_DIR)/timer.object $(GEN_DIR)/scheduled_output_action.object $(GEN_DIR)/adc.object $(GEN_DIR)/hal.object $(GEN_DIR)/util.object $(GEN_DIR)/light_barrier.object $(GEN_DIR)/controller.object $(GEN_DIR)/controller_state.object $(GEN_DIR)/controller_state_diagnostic.object $(GEN_DIR)/controller_state_normal.object $(GEN_DIR)/motor.object $(GEN_DIR)/gpio.object $(GEN_DIR)/gpi.object $(GEN_DIR)/gpo.object $(GEN_DIR)/piston.object $(GEN_DIR)/controller_state_normal_state.object $(GEN_DIR)/controller_state_normal_state_stopped.object $(GEN_DIR)/controller_state_normal_state_started.object 
+OBJECTS=$(GEN_DIR)/main.object $(GEN_DIR)/timer.object $(GEN_DIR)/scheduled_output_action.object $(GEN_DIR)/adc.object $(GEN_DIR)/hal.object $(GEN_DIR)/util.object $(GEN_DIR)/light_barrier.object $(GEN_DIR)/controller.object $(GEN_DIR)/controller_state.object $(GEN_DIR)/controller_state_diagnostic.object $(GEN_DIR)/controller_state_normal.object $(GEN_DIR)/motor.object $(GEN_DIR)/gpio.object $(GEN_DIR)/gpi.object $(GEN_DIR)/gpo.object $(GEN_DIR)/piston.object $(GEN_DIR)/controller_state_normal_state.object $(GEN_DIR)/controller_state_normal_state_stopped.object $(GEN_DIR)/controller_state_normal_state_started.object $(GEN_DIR)/color_detect.object $(GEN_DIR)/brick_eject_command.object
 
 all: printStart $(TARGET) printEnd
 

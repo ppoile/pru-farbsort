@@ -15,10 +15,12 @@ namespace {
   uint32_t ticks = 0;
 }
 
-void timer_start()
+void Timer::start()
 {
   /* Disable counter */
   CT_IEP.TMR_GLB_CFG_bit.CNT_EN = 0;
+
+  lastTimer = 0;
 
   /* Reset Count register */
   CT_IEP.TMR_CNT = 0xFFFFFFFF;
@@ -27,7 +29,7 @@ void timer_start()
   CT_IEP.TMR_GLB_STS_bit.CNT_OVF = 1;
 
   /* Clear compare status */
-  CT_IEP.TMR_CMP_STS_bit.CMP_HIT = 0xFF;
+  CT_IEP.TMR_CMP_STS_bit.CMP_HIT = 1; // counter 0
 
   /* Set compare value */
   CT_IEP.TMR_CMP0 = COUNTER_INCREMENTS_PER_SECOND_AT_200MHZ / TICKS_PER_SECOND;
@@ -43,27 +45,31 @@ void timer_start()
   CT_IEP.TMR_COMPEN_bit.COMPEN_CNT = 0;
 
   /* Clear the status of all interrupts */
-  CT_INTC.SECR0 = 0xFFFFFFFF;
-  CT_INTC.SECR1 = 0xFFFFFFFF;
+  //CT_INTC.SECR0 = 0xFFFFFFFF;
+  //CT_INTC.SECR1 = 0xFFFFFFFF;
 
   /* Enable counter */
   CT_IEP.TMR_GLB_CFG_bit.CNT_EN = 1;
+
 }
 
-void timer_poll()
+
+
+bool Timer::elapsed()
 {
-  if (timer_elapsed()) {
-    ticks += 1;
-    CT_IEP.TMR_CMP_STS_bit.CMP_HIT = 0x01;
-  }
+    if(CT_IEP.TMR_CMP_STS_bit.CMP_HIT & 0x01)
+    {
+        ticks += 1;
+        CT_IEP.TMR_CMP_STS_bit.CMP_HIT = 1; // write to clear the status
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
-bool timer_elapsed()
-{
-  return !(!(CT_IEP.TMR_CMP_STS_bit.CMP_HIT & 0x01));
-}
-
-void timer_stop()
+void Timer::stop()
 {
   /* Disable counter */
   CT_IEP.TMR_GLB_CFG_bit.CNT_EN = 0;
@@ -78,9 +84,9 @@ void timer_stop()
   CT_INTC.SECR0 = (1 << 7);
 }
 
-uint32_t timer_get_ticks()
+uint32_t Timer::get_ticks()
 {
-  return ticks;
+    return ticks;
 }
 
 
@@ -113,21 +119,26 @@ void Timer::schedule(CommandInterface *command, int ticks)
 
 void Timer::poll()
 {
-    int currentTimer = ticks;
-    int diff = currentTimer - lastTimer;
-    for (int i = 0; i < TIMER_MAX_SCHEDULES; i++)
+    if (elapsed())
     {
-        if(registration[i].ticks > diff)
+        int currentTimer = ticks;
+        int diff = currentTimer - lastTimer;
+        for (int i = 0; i < TIMER_MAX_SCHEDULES; i++)
         {
-            registration[i].ticks -= diff;
+            if(registration[i].ticks > diff)
+            {
+                registration[i].ticks -= diff;
+            }
+            else if (registration[i].ticks > 0)
+            {
+                registration[i].ticks = 0;
+                registration[i].command->execute();
+            }
         }
-        else if (registration[i].ticks > 0)
-        {
-            registration[i].ticks = 0;
-            registration[i].command->execute();
-        }
+        lastTimer = currentTimer;
     }
-    lastTimer = currentTimer;
+
 }
+
 
 

@@ -7,12 +7,12 @@
 #include "piston.h"
 #include "light_barrier.h"
 #include "hw.h"
-
+#include "pru_rpmsg.h"
 
 extern bool rpmsg_connected;
 extern int16_t post_info(char info);
 extern int16_t post_event(char const *event, uint16_t length);
-
+extern uint8_t adc_values[200];
 
 
 Controller::Controller(Hw &hw):
@@ -93,7 +93,9 @@ void Controller::handleGetAllInfo()
     }
     else {
       post_info(INFO_CTRL_STOP);
-    }/*
+    }
+
+    /*
     if (verbose) {
       post_info(INFO_VERBOSE_ON);
     }
@@ -106,24 +108,27 @@ void Controller::handleGetAllInfo()
     else {
       post_info(INFO_CONVEYER_STOPPED);
     }*/
-    if(hw.lightBarrier0.getStatus()) {
-      post_info(INFO_LIGHT_BARRIER_1_ON);
+
+    if(hw.lightBarrier0.isInterrupted()) {
+      post_info(INFO_LIGHT_BARRIER_1_DARK);
     }
     else {
-      post_info(INFO_LIGHT_BARRIER_1_OFF);
+      post_info(INFO_LIGHT_BARRIER_1_BRIGHT);
     }
-    if (hw.lightBarrier1.getStatus()) {
-      post_info(INFO_LIGHT_BARRIER_2_ON);
+    if (hw.lightBarrier1.isInterrupted()) {
+      post_info(INFO_LIGHT_BARRIER_2_DARK);
     }
     else {
-      post_info(INFO_LIGHT_BARRIER_2_OFF);
+      post_info(INFO_LIGHT_BARRIER_2_BRIGHT);
     }
-    if (hw.lightBarrierEmergencyStop.getStatus()) {
+    if (hw.lightBarrierEmergencyStop.isInterrupted()) {
       post_info(INFO_EMERGENCY_STOP_ON);
     }
     else {
       post_info(INFO_EMERGENCY_STOP_OFF);
     }
+
+    post_event( (const char*) adc_values, 200);
 }
 
 

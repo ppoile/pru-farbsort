@@ -6,7 +6,7 @@
 class Piston : public Gpo
 {
 public:
-    Piston(uint8_t mask);
+    Piston(uint32_t mask);
 
     void push();
     void pull();

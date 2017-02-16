@@ -46,3 +46,9 @@ compressor.h
 compressor.cpp
 queue.h
 command_interface.h
+color_detect.h
+color_detect.cpp
+common.h
+object_pool.h
+brick_eject_command.h
+brick_eject_command.cpp

@@ -3,7 +3,7 @@
 
 int16_t post_info(char info);
 
-Piston::Piston(uint8_t mask): Gpo(mask)
+Piston::Piston(uint32_t mask): Gpo(mask)
 {
 
 }
