@@ -2,7 +2,7 @@
 
 
 
-#define TIMER_MAX_SCHEDULES 5
+#define TIMER_MAX_SCHEDULES 10
 
 class CommandInterface;
 
