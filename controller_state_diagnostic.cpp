@@ -10,12 +10,12 @@
 
 int16_t post_info(char info);
 
-ControllerStateDiagnostic::ControllerStateDiagnostic()
+ControllerStateDiagnostic::ControllerStateDiagnostic(Hw &hw, Timer &timer):ControllerState(hw, timer)
 {
 }
 
 
-void ControllerStateDiagnostic::processCmd(Hw &hw, Controller &controller, uint8_t cmd)
+void ControllerStateDiagnostic::processCmd(Controller &controller, uint8_t cmd)
 {
 
     switch(cmd)

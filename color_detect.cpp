@@ -2,6 +2,7 @@
 #include "color_detect.h"
 #include "adc.h"
 #include "timer.h"
+#include "hw.h"
 
 extern uint8_t adc_values[200];
 extern uint8_t adc_value_index;
@@ -19,7 +20,8 @@ namespace {
     uint16_t const thresholdRed    =  (adcRefRed + adcRefWhite) / 2;
 }
 
-ColorDetect::ColorDetect(Timer &timer, Queue<Color, COLOR_QUEUE_SIZE> &colorQueue): timer(timer), adcOld(0), diffOld(0), lastColor(BLACK), colorQueue(colorQueue)
+ColorDetect::ColorDetect(Hw &hw, Timer &timer, Queue<Color, COLOR_QUEUE_SIZE> &colorQueue):
+    hw(hw), timer(timer), adcOld(0), diffOld(0), lastColor(BLACK), colorQueue(colorQueue)
 {
 
 }
@@ -27,7 +29,7 @@ ColorDetect::ColorDetect(Timer &timer, Queue<Color, COLOR_QUEUE_SIZE> &colorQueu
 
 void ColorDetect::execute()
 {
-    int16_t adc = adc_read();
+    int16_t adc = hw.adc.read();
     int16_t diff = (adc - adcOld);
     int16_t diffDiff = diff - diffOld;
 

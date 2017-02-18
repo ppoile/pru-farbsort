@@ -59,8 +59,9 @@ extern "C" {
 #include "compressor.h"
 #include "command_interface.h"
 #include "color_detect.h"
-#include "object_pool.h"
 #include "brick_eject_command.h"
+#include "controller_state_diagnostic.h"
+#include "controller_state_normal.h"
 
 volatile register uint32_t __R30;
 volatile register uint32_t __R31;
@@ -126,6 +127,7 @@ uint32_t lightbarriers3_to_5_last_change;
 Motor motor(MOTOR_MASK);
 Piston piston[] = { Piston(VALVE1_MASK), Piston(VALVE2_MASK), Piston(VALVE3_MASK) };
 LightBarrier lightBarrier[] = { LightBarrier(LIGHTBARRIER1_MASK), LightBarrier(LIGHTBARRIER2_MASK), LightBarrier(LIGHTBARRIERS3_TO_5_MASK) };
+Adc adc;
 
 Hw hw(motor,
       //compressor
@@ -134,17 +136,24 @@ Hw hw(motor,
         piston[2],
         lightBarrier[0],
         lightBarrier[1],
-        lightBarrier[2]);
+        lightBarrier[2],
+        adc);
 
 
 
-Controller ctrl(hw);
 Timer timer;
+
 Queue<Color,COLOR_QUEUE_SIZE> colorQueue;
-ColorDetect colorDetect(timer, colorQueue);
-
-
+ColorDetect colorDetect(hw, timer, colorQueue);
 ObjectPool<BrickEjectCommand, 5> ejectCommandPool;
+
+ControllerStateDiagnostic stateDiagnostic(hw, timer);
+ControllerStateNormalStateStarted state_started(hw, timer, colorQueue, colorDetect, ejectCommandPool);
+ControllerStateNormalStateStopped state_stopped(hw, timer);
+ControllerStateNormal stateNormal(hw, timer, state_started, state_stopped);
+
+Controller ctrl(hw, stateDiagnostic, stateNormal);
+
 
 bool verbose;
 
@@ -202,14 +211,10 @@ static void checkArmToPruMsg()
     }
 }
 
-void brickEjectDone(BrickEjectCommand *command)
-{
-    ejectCommandPool.free(command);
-}
+
 
 
 void main() {
-    bool lb2BrickUnhandled = true;
     volatile uint8_t *status;
 
     /* Allow OCP master port access by the PRU so the PRU can read external memories */
@@ -233,42 +238,13 @@ void main() {
       adc_values[i] = 0xaa;
     }
 
-    adc_init();
     timer.start();
     timer.schedule(&colorDetect,100);
 
 
     while (1) {
-    timer.poll();
-
-    if(lightBarrier[1].isInterrupted()) // brick after color detection?
-    {
-        if(lb2BrickUnhandled)   // brick unhandled?
-        {
-            post_info(0xaa);
-            Color color = colorQueue.pull(); // get detected color
-
-            post_info(color);
-
-            BrickEjectCommand *command = ejectCommandPool.getObject();
-            if(command)
-            {
-
-                command->ejectColor(hw, timer, color, brickEjectDone);
-                lb2BrickUnhandled = false;
-            }
-            else
-            {
-                // @todo error handling, command pool exhausted
-            }
-        }
-    }
-    else // no brick
-    {
-        lb2BrickUnhandled = true;
-    }
-
-
-    checkArmToPruMsg();
+        timer.poll();
+        ctrl.doIt();
+        checkArmToPruMsg();
     }
 }

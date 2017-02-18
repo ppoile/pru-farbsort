@@ -1,5 +1,7 @@
-#include <stdint.h>
+#ifndef TIMER_H
+#define TIMER_H
 
+#include <stdint.h>
 
 
 #define TIMER_MAX_SCHEDULES 10
@@ -31,3 +33,7 @@ public:
 
 
 };
+
+#endif // TIMER_H
+
+

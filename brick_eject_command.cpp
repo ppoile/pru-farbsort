@@ -12,14 +12,14 @@ namespace
 
 Piston *BrickEjectCommand::piston;
 Timer *BrickEjectCommand::timer;
-CallbackFunc BrickEjectCommand::callback;
+BrickEjectCommandDoneInterface *BrickEjectCommand::callback;
 
 BrickEjectCommand::BrickEjectCommand()
 {
 
 }
 
-void BrickEjectCommand::ejectColor(Hw &hw, Timer &timer, Color color, CallbackFunc callback)
+void BrickEjectCommand::ejectColor(Hw &hw, Timer &timer, Color color, BrickEjectCommandDoneInterface *callback)
 {
     command = Piston_Push;
     uint16_t ticks = 0;
@@ -56,7 +56,7 @@ void BrickEjectCommand::ejectColor(Hw &hw, Timer &timer, Color color, CallbackFu
     }
     else
     {
-        callback(this);
+        callback->brickEjectCommandDone(this);
     }
 
 }
@@ -72,7 +72,7 @@ void BrickEjectCommand::execute()
     else // pull
     {
         piston->pull();
-        callback(this);
+        callback->brickEjectCommandDone(this);
 
     }
 }

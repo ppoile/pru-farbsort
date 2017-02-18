@@ -9,14 +9,22 @@
 
 int16_t post_info(char info);
 
-ControllerStateNormal::ControllerStateNormal()
+bool ControllerStateNormal::lb2BrickUnhandled = true;
+
+ControllerStateNormal::ControllerStateNormal(Hw &hw, Timer &timer,
+                                             ControllerStateNormalStateStarted &state_started,
+                                             ControllerStateNormalStateStopped &state_stopped):
+                                                ControllerState(hw, timer),
+                                                state_started(state_started),
+                                                state_stopped(state_stopped)
+
 {
     pState = &state_stopped;
 }
 
-void ControllerStateNormal::processCmd(Hw &hw, Controller &controller, uint8_t cmd)
+void ControllerStateNormal::processCmd(Controller &controller, uint8_t cmd)
 {
-    pState->processCmd(hw, cmd);
+    pState->processCmd(cmd);
 
     switch(cmd)
     {
@@ -32,7 +40,7 @@ void ControllerStateNormal::processCmd(Hw &hw, Controller &controller, uint8_t c
 void ControllerStateNormal::setState(ControllerStateNormalState *pNewState, Hw &hw)
 {
     pState = pNewState;
-    pState->onEntry(hw);
+    pState->onEntry();
 }
 
 ControllerStateNormalState* ControllerStateNormal::getState()
@@ -40,7 +48,12 @@ ControllerStateNormalState* ControllerStateNormal::getState()
     return pState;
 }
 
-void ControllerStateNormal::onEntry(Hw &hw)
+void ControllerStateNormal::onEntry()
 {
     setState(&state_stopped, hw);
+}
+
+void ControllerStateNormal::doIt()
+{
+    pState->doIt();
 }

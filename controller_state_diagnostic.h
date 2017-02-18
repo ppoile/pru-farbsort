@@ -9,9 +9,9 @@ class Controller;
 class ControllerStateDiagnostic : public ControllerState
 {
 public:
-    ControllerStateDiagnostic();
+    ControllerStateDiagnostic(Hw &hw, Timer &timer);
 
-    void processCmd(Hw &hw, Controller &controller, uint8_t cmd);
+    void processCmd(Controller &controller, uint8_t cmd);
 };
 
 #endif // CONTROLLERSTATEDIAGNOSTIC_H

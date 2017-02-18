@@ -1,5 +1,6 @@
 #include "controller.h"
 #include "controller_state_normal.h"
+#include "controller_state_diagnostic.h"
 #include "motor.h"
 #include "hal.h"
 #include "version.h"
@@ -15,8 +16,10 @@ extern int16_t post_event(char const *event, uint16_t length);
 extern uint8_t adc_values[200];
 
 
-Controller::Controller(Hw &hw):
-                       hw(hw)
+Controller::Controller(Hw &hw, ControllerStateDiagnostic &state_diagnostic, ControllerStateNormal &state_normal):
+                       hw(hw),
+                       state_diagnostic(state_diagnostic),
+                       state_normal(state_normal)
 {
     pState = &state_normal;
 
@@ -27,7 +30,7 @@ Controller::Controller(Hw &hw):
 void Controller::setState(ControllerState* pState)
 {
     this->pState = pState;
-    pState->onEntry(hw);
+    pState->onEntry();
 }
 
 void Controller::processCmd(uint8_t cmd)
@@ -46,7 +49,7 @@ void Controller::processCmd(uint8_t cmd)
     }
 
     // handle state dependent commands
-    pState->processCmd(hw, *this, cmd);
+    pState->processCmd(*this, cmd);
 }
 
 
@@ -131,5 +134,9 @@ void Controller::handleGetAllInfo()
     post_event( (const char*) adc_values, 200);
 }
 
+void Controller::doIt()
+{
+    pState->doIt();
+}
 
 

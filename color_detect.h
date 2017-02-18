@@ -6,11 +6,12 @@
 #include "queue.h"
 
 class Timer;
+class Hw;
 
 class ColorDetect : public CommandInterface
 {
 public:
-    ColorDetect(Timer &timer, Queue<Color, COLOR_QUEUE_SIZE> &colorQueue);
+    ColorDetect(Hw &hw, Timer &timer, Queue<Color, COLOR_QUEUE_SIZE> &colorQueue);
 
     void execute();
 
@@ -21,6 +22,7 @@ private:
 
     void evalColor(uint16_t adc);
     Timer &timer;
+    Hw &hw;
     Queue<Color, COLOR_QUEUE_SIZE> &colorQueue;
 };
 

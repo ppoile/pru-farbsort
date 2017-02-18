@@ -10,12 +10,12 @@
 
 int16_t post_info(char info);
 
-ControllerStateNormalStateStopped::ControllerStateNormalStateStopped()
+ControllerStateNormalStateStopped::ControllerStateNormalStateStopped(Hw &hw, Timer &timer): ControllerStateNormalState(hw, timer)
 {
 
 }
 
-void ControllerStateNormalStateStopped::onEntry(Hw &hw)
+void ControllerStateNormalStateStopped::onEntry()
 {
     hw.motor.stop();
     hw.piston0.pull();
@@ -23,7 +23,7 @@ void ControllerStateNormalStateStopped::onEntry(Hw &hw)
     hw.piston2.pull();
 }
 
-void ControllerStateNormalStateStopped::processCmd(Hw &hw, uint8_t cmd)
+void ControllerStateNormalStateStopped::processCmd(uint8_t cmd)
 {
 
     switch(cmd)

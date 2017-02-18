@@ -3,6 +3,8 @@
 
 #include "command_interface.h"
 #include "common.h"
+#include "controller_state_normal_state_started.h"
+#include "brick_eject_command_done_interface.h"
 
 class Timer;
 class Hw;
@@ -10,20 +12,19 @@ class Piston;
 
 class BrickEjectCommand;
 
-typedef void(*CallbackFunc)(BrickEjectCommand *);
 
 class BrickEjectCommand : public CommandInterface
 {
 public:
     BrickEjectCommand();
 
-    void ejectColor(Hw &hw, Timer &timer, Color color, CallbackFunc callback);
+    void ejectColor(Hw &hw, Timer &timer, Color color, BrickEjectCommandDoneInterface *callback);
     void execute();
 
 private:
     static Piston *piston;
     static Timer *timer;
-    static CallbackFunc callback;
+    static BrickEjectCommandDoneInterface *callback;
 
     typedef enum{ Piston_Push, Piston_Pull} PistonCommand;
     PistonCommand command;

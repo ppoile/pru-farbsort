@@ -6,7 +6,7 @@ namespace {
   const uint32_t CTRL = 0x40;
   const uint32_t ADC_CLKDIV = 0x4c;
   const uint32_t STEPCONFIG1 = 0x64;
-  const uint32_t STEPDELAY1 = 0x68;
+  //const uint32_t STEPDELAY1 = 0x68;
   const uint32_t FIFO1THRESHOLD = 0xf4;
   const uint32_t FIFO1COUNT = 0xf0;
   const uint32_t FIFO1DATA = 0x200;
@@ -27,7 +27,7 @@ namespace {
 
     int32_t adc_state =0 ;
 
-void adc_init()
+Adc::Adc()
 {
   register_write(ADC_CLKDIV, 8-1);      // ACD clock will be divided by
   register_write(CTRL, 6);  // step config registers writable, store the channel id tag in the adc fifo
@@ -39,7 +39,7 @@ void adc_init()
   register_write(CTRL, 7);  // turn on TSC_ADC_SS.
 }
 
-uint16_t adc_read()
+uint16_t Adc::read()
 {
   while (register_read(FIFO1COUNT) > 0) {
     (void)register_read(FIFO1DATA);

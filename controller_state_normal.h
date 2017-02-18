@@ -5,24 +5,31 @@
 #include "controller_state_normal_state.h"
 #include "controller_state_normal_state_started.h"
 #include "controller_state_normal_state_stopped.h"
+#include "timer.h"
 
 struct Hw;
+
 
 class ControllerStateNormal: public ControllerState
 {
 public:
-    ControllerStateNormal();
+    ControllerStateNormal(Hw &hw, Timer &timer,
+                          ControllerStateNormalStateStarted &state_started,
+                          ControllerStateNormalStateStopped &state_stopped);
 
-    void processCmd(Hw &hw, Controller &controller, uint8_t cmd);
-    void setState(ControllerStateNormalState *pNewState, Hw &hw);
+        void setState(ControllerStateNormalState *pNewState, Hw &hw);
     ControllerStateNormalState*getState();
-    void onEntry(Hw &hw);
 
-    ControllerStateNormalStateStarted state_started;
-    ControllerStateNormalStateStopped state_stopped;
+    void processCmd(Controller &controller, uint8_t cmd);
+    void onEntry();
+    void doIt();
+
+    ControllerStateNormalStateStarted &state_started;
+    ControllerStateNormalStateStopped &state_stopped;
 
 private:
     ControllerStateNormalState* pState;
+    static bool lb2BrickUnhandled;
 };
 
 #endif // CONTROLLERSTATENORMAL_H

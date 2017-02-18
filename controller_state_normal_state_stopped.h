@@ -8,9 +8,9 @@ struct Hw;
 class ControllerStateNormalStateStopped : public ControllerStateNormalState
 {
 public:
-    ControllerStateNormalStateStopped();
-    void processCmd(Hw &hw, uint8_t cmd);
-    void onEntry(Hw &hw);
+    ControllerStateNormalStateStopped(Hw &hw, Timer &timer);
+    void processCmd(uint8_t cmd);
+    void onEntry();
 };
 
 #endif // CONTROLLERSTATENORMALSTATESTOPPED_H

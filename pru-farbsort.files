@@ -52,3 +52,4 @@ common.h
 object_pool.h
 brick_eject_command.h
 brick_eject_command.cpp
+brick_eject_command_done_interface.h

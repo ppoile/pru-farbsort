@@ -29,7 +29,7 @@ public:
                 return &array[i];
             }
         }
-        return NULL;
+        return 0;
     }
 
     void free(T* object)

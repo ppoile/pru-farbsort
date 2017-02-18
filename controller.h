@@ -11,14 +11,15 @@ class Hw;
 class Controller
 {
 public:
-    Controller(Hw &hw);
+    Controller(Hw &hw, ControllerStateDiagnostic &state_diagnostic, ControllerStateNormal &state_normal);
 
 
     void processCmd(uint8_t cmd);
+    void doIt();
     void setState(ControllerState* pState);
 
-    ControllerStateDiagnostic state_diagnostic;
-    ControllerStateNormal   state_normal;
+    ControllerStateDiagnostic   &state_diagnostic;
+    ControllerStateNormal       &state_normal;
 
 
 private:

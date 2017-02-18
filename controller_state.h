@@ -5,14 +5,20 @@
 
 struct Hw;
 class Controller;
+class Timer;
 
 class ControllerState
 {
 public:
-    ControllerState();
+    ControllerState(Hw &hw, Timer &timer);
 
-    virtual void processCmd(Hw &hw, Controller &controller, uint8_t cmd) = 0;
-    virtual void onEntry(Hw &hw){};
+    virtual void processCmd(Controller &controller, uint8_t cmd) = 0;
+    virtual void onEntry(){};
+    virtual void doIt(){};
+
+protected:
+    Hw &hw;
+    Timer &timer;
 };
 
 #endif // CONTROLLERSTATE_H
