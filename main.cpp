@@ -56,7 +56,6 @@ extern "C" {
 #include "piston.h"
 #include "hw.h"
 #include "queue.h"
-#include "compressor.h"
 #include "command_interface.h"
 #include "color_detect.h"
 #include "brick_eject_command.h"

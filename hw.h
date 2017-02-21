@@ -2,7 +2,6 @@
 #define HW
 
 class Motor;
-class Compressor;
 class LightBarrier;
 class Piston;
 class Adc;
