@@ -99,7 +99,7 @@ Timer::Timer()
 }
 
 
-void Timer::schedule(CommandInterface *command, int ticks)
+void Timer::registerCommand(CommandInterface *command, int ticks)
 {
     for (int i = 0; i < TIMER_MAX_SCHEDULES; i++)
     {
@@ -115,6 +115,17 @@ void Timer::schedule(CommandInterface *command, int ticks)
         }
     }
 
+}
+
+void Timer::unregisterCommand(CommandInterface *command)
+{
+    for (int i = 0; i < TIMER_MAX_SCHEDULES; i++)
+    {
+        if(registration[i].command == command)
+        {
+                registration[i].ticks = 0;
+        }
+    }
 }
 
 void Timer::poll()

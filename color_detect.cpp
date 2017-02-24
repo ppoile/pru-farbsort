@@ -4,10 +4,10 @@
 #include "timer.h"
 #include "hw.h"
 
+#ifdef ADC_LOGGING
 extern uint8_t adc_values[200];
 extern uint8_t adc_value_index;
-
-extern int16_t post_event(char const *event, uint16_t length);
+#endif
 
 namespace {
     uint16_t const adcRefBlack  = 1228;
@@ -20,8 +20,8 @@ namespace {
     uint16_t const thresholdRed    =  (adcRefRed + adcRefWhite) / 2;
 }
 
-ColorDetect::ColorDetect(Hw &hw, Timer &timer, Queue<Color, COLOR_QUEUE_SIZE> &colorQueue):
-    hw(hw), timer(timer), adcOld(0), diffOld(0), lastColor(BLACK), colorQueue(colorQueue)
+ColorDetect::ColorDetect(Hw &hw, TimerInterface *timer, Queue<Color, COLOR_QUEUE_SIZE> &colorQueue):
+    adcOld(adcRefBlack), diffOld(0), lastColor(BLACK), hw(hw), timer(timer),  colorQueue(colorQueue)
 {
 
 }
@@ -29,10 +29,11 @@ ColorDetect::ColorDetect(Hw &hw, Timer &timer, Queue<Color, COLOR_QUEUE_SIZE> &c
 
 void ColorDetect::execute()
 {
-    int16_t adc = hw.adc.read();
+    int16_t adc = hw.adc->read();
     int16_t diff = (adc - adcOld);
     int16_t diffDiff = diff - diffOld;
 
+#ifdef ADC_LOGGING
     // temporary fill the adc values into buffer to query from linux
     adc_values[adc_value_index++] = adc & 0xff;
     adc_values[adc_value_index++] = (adc >> 8) & 0xff;
@@ -40,6 +41,7 @@ void ColorDetect::execute()
     {
         adc_value_index = 0;
     }
+#endif
 
     if(((diff > 0) && (diffOld <= 0)) && (diffDiff > 0))// minimum shortly missed?
     {
@@ -54,7 +56,7 @@ void ColorDetect::execute()
     diffOld = diff;
 
     // register this function for periodic call
-    timer.schedule(this,5);
+    timer->registerCommand(this,5);
 }
 
 void ColorDetect::evalColor(uint16_t adc)
@@ -80,7 +82,6 @@ void ColorDetect::evalColor(uint16_t adc)
 
     if(color != lastColor) // color changed?
     {
-        post_event((char*)&color,1);
         lastColor = color;
         if(color != BLACK)
         {

@@ -5,20 +5,27 @@
 
 struct Hw;
 class Controller;
-class Timer;
+class TimerInterface;
+class RpMsgTxInterface;
 
 class ControllerState
 {
 public:
-    ControllerState(Hw &hw, Timer &timer);
+    ControllerState(Hw &hw, TimerInterface *timer, RpMsgTxInterface *rpmsg)
+        :hw(hw), timer(timer), rpmsg(rpmsg)
+    {
+
+    }
 
     virtual void processCmd(Controller &controller, uint8_t cmd) = 0;
     virtual void onEntry(){};
+    virtual void onExit(){};
     virtual void doIt(){};
 
 protected:
     Hw &hw;
-    Timer &timer;
+    TimerInterface *timer;
+    RpMsgTxInterface *rpmsg;
 };
 
 #endif // CONTROLLERSTATE_H

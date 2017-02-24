@@ -4,7 +4,7 @@
 #include "gpi.h"
 #include "light_barrier_interface.h"
 
-class LightBarrier : public Gpi, LightBarrierInterface
+class LightBarrier : public Gpi, public LightBarrierInterface
 {
 private:
 

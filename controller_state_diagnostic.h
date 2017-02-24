@@ -9,7 +9,7 @@ class Controller;
 class ControllerStateDiagnostic : public ControllerState
 {
 public:
-    ControllerStateDiagnostic(Hw &hw, Timer &timer);
+    ControllerStateDiagnostic(Hw &hw, TimerInterface *timer, RpMsgTxInterface *rpmsg);
 
     void processCmd(Controller &controller, uint8_t cmd);
 };

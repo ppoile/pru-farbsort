@@ -10,17 +10,18 @@
 
 int16_t post_info(char info);
 
-ControllerStateNormalStateStopped::ControllerStateNormalStateStopped(Hw &hw, Timer &timer): ControllerStateNormalState(hw, timer)
+ControllerStateNormalStateStopped::ControllerStateNormalStateStopped(Hw &hw, TimerInterface *timer, RpMsgTxInterface *rpmsg)
+    : ControllerStateNormalState(hw, timer, rpmsg)
 {
 
 }
 
 void ControllerStateNormalStateStopped::onEntry()
 {
-    hw.motor.stop();
-    hw.piston0.pull();
-    hw.piston1.pull();
-    hw.piston2.pull();
+    hw.motor->stop();
+    hw.piston0->pull();
+    hw.piston1->pull();
+    hw.piston2->pull();
 }
 
 void ControllerStateNormalStateStopped::processCmd(uint8_t cmd)
@@ -29,7 +30,7 @@ void ControllerStateNormalStateStopped::processCmd(uint8_t cmd)
     switch(cmd)
     {
         case CMD_START:
-            pSuperState->setState(&pSuperState->state_started, hw);
+            pSuperState->setState(&pSuperState->state_started);
             break;
 
 

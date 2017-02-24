@@ -36,3 +36,19 @@ TEST(QueueTest, StoreTooMuch_LastItemLost)
     queue.push(RED);
     ASSERT_EQ(queue.pull(), RED);
 }
+
+TEST(QueueTest, EmptyList_ShallBeRecognized)
+{
+    Queue<Color,3> queue;
+    // initially empty
+    ASSERT_TRUE(queue.isEmpty());
+
+    queue.push(RED);
+    // not empty anymore
+    ASSERT_FALSE(queue.isEmpty());
+    queue.pull();
+
+    // empty again
+    ASSERT_TRUE(queue.isEmpty());
+
+}

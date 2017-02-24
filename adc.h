@@ -1,10 +1,10 @@
 #ifndef ADC_H
 #define ADC_H
 
-
 #include <stdint.h>
+#include "adc_interface.h"
 
-class Adc
+class Adc: public AdcInterface
 {
     public:
         Adc();

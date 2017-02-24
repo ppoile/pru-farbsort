@@ -2,13 +2,13 @@
 #define TIMER_H
 
 #include <stdint.h>
-
+#include "timer_interface.h"
 
 #define TIMER_MAX_SCHEDULES 10
 
 class CommandInterface;
 
-class Timer
+class Timer : public TimerInterface
 {
 
 private :
@@ -23,7 +23,8 @@ private :
 
 public:
     Timer();
-    void schedule(CommandInterface *command, int ticks);
+    void registerCommand(CommandInterface *command, int ticks);
+    void unregisterCommand(CommandInterface *command);
     void poll();
     void start();
     bool elapsed();

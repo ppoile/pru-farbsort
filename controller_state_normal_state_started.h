@@ -5,31 +5,35 @@
 #include "object_pool.h"
 #include "brick_eject_command.h"
 #include "queue.h"
-#include "timer.h"
 #include "brick_eject_command_done_interface.h"
 
 struct Hw;
 class ColorDetect;
+class TimerInterface;
+class RpMsgTxInterface;
 
 class ControllerStateNormalStateStarted : public ControllerStateNormalState, BrickEjectCommandDoneInterface
 {
 public:
     ControllerStateNormalStateStarted(Hw &hw,
-                                      Timer &timer,
+                                      TimerInterface *timer,
+                                      RpMsgTxInterface *rpmsg,
                                       Queue<Color,COLOR_QUEUE_SIZE> &colorQueue,
-                                      ColorDetect &colorDetect,
+                                      CommandInterface *colorDetect,
                                       ObjectPool<BrickEjectCommand, 5> &ejectCommandPool);
 
     void processCmd(uint8_t cmd);
     void onEntry();
+    void onExit();
     void doIt();
 
 private:
     ObjectPool<BrickEjectCommand, 5> &ejectCommandPool;
-    void brickEjectCommandDone(BrickEjectCommand *command);
     bool lb2BrickUnhandled;
     Queue<Color,COLOR_QUEUE_SIZE> &colorQueue;
-    ColorDetect &colorDetect;
+    CommandInterface *colorDetect;
+
+    void brickEjectCommandDone(BrickEjectCommand *command);
 };
 
 #endif // CONTROLLERSTATENORMALSTATESTARTED_H

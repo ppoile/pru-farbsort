@@ -7,11 +7,12 @@
 
 class Timer;
 class Hw;
+class TimerInterface;
 
 class ColorDetect : public CommandInterface
 {
 public:
-    ColorDetect(Hw &hw, Timer &timer, Queue<Color, COLOR_QUEUE_SIZE> &colorQueue);
+    ColorDetect(Hw &hw, TimerInterface *timer, Queue<Color, COLOR_QUEUE_SIZE> &colorQueue);
 
     void execute();
 
@@ -20,10 +21,11 @@ private:
     int16_t diffOld;
     Color lastColor;
 
-    void evalColor(uint16_t adc);
-    Timer &timer;
     Hw &hw;
+    TimerInterface *timer;
     Queue<Color, COLOR_QUEUE_SIZE> &colorQueue;
+
+    void evalColor(uint16_t adc);
 };
 
 #endif // COLORDETECT_H

@@ -1,5 +1,6 @@
 #include "gpi.h"
 #include <stdint.h>
+#include <pru_cfg.h>
 
 volatile register uint32_t __R31;
 

@@ -4,5 +4,6 @@
 #endif // LIGHT_BARRIER_INTERFACE
 
 class LightBarrierInterface{
-    virtual bool isInterrupted(void) = 0;
+    public:
+        virtual bool isInterrupted(void) = 0;
 };

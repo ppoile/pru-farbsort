@@ -8,20 +8,23 @@
 #include "timer.h"
 
 struct Hw;
+class TimerInterace;
+class RpMsgTxInterface;
 
 
 class ControllerStateNormal: public ControllerState
 {
 public:
-    ControllerStateNormal(Hw &hw, Timer &timer,
+    ControllerStateNormal(Hw &hw, TimerInterface *timer, RpMsgTxInterface *rpmsg,
                           ControllerStateNormalStateStarted &state_started,
                           ControllerStateNormalStateStopped &state_stopped);
 
-        void setState(ControllerStateNormalState *pNewState, Hw &hw);
+    void setState(ControllerStateNormalState *pNewState);
     ControllerStateNormalState*getState();
 
     void processCmd(Controller &controller, uint8_t cmd);
     void onEntry();
+    void onExit();
     void doIt();
 
     ControllerStateNormalStateStarted &state_started;

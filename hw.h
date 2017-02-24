@@ -1,31 +1,31 @@
 #ifndef HW
 #define HW
 
-class Motor;
-class LightBarrier;
-class Piston;
-class Adc;
+
+class LightBarrierInterface;
+class PistonInterface;
+class AdcInterface;
+class MotorInterface;
 
 struct Hw
 {
-    Motor &motor;
-    Piston &piston0;
-    Piston &piston1;
-    Piston &piston2;
-    LightBarrier &lightBarrier0;
-    LightBarrier &lightBarrier1;
-    LightBarrier &lightBarrierEmergencyStop;
-    Adc &adc;
+    MotorInterface *motor;
+    PistonInterface *piston0;
+    PistonInterface *piston1;
+    PistonInterface *piston2;
+    LightBarrierInterface *lightBarrier0;
+    LightBarrierInterface *lightBarrier1;
+    LightBarrierInterface *lightBarrierEmergencyStop;
+    AdcInterface *adc;
 
-    Hw(Motor &motor,
-       //Compressor &compressor,
-        Piston &piston0,
-        Piston &piston1,
-        Piston &piston2,
-        LightBarrier &lightBarrier0,
-        LightBarrier &lightBarrier1,
-        LightBarrier &lightBarrierEmergencyStop,
-        Adc &adc):
+    Hw(MotorInterface *motor,
+        PistonInterface *piston0,
+        PistonInterface *piston1,
+        PistonInterface *piston2,
+        LightBarrierInterface *lightBarrier0,
+        LightBarrierInterface *lightBarrier1,
+        LightBarrierInterface *lightBarrierEmergencyStop,
+        AdcInterface *adc):
             motor(motor),
             piston0(piston0),
             piston1(piston1),

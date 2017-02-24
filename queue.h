@@ -46,6 +46,13 @@ public:
         return ((head == tail) && (!full));
     }
 
+    void clear()
+    {
+        head = 0;
+        tail = 0;
+        full = false;
+    }
+
 };
 
 

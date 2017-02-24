@@ -6,27 +6,38 @@
 #include "controller_state_normal_state_stopped.h"
 #include "hw.h"
 #include "light_barrier.h"
+#include "rpmsg_tx_interface.h"
 
 int16_t post_info(char info);
 
 
 ControllerStateNormalStateStarted::ControllerStateNormalStateStarted(Hw &hw,
-                                                                     Timer &timer,
+                                                                     TimerInterface *timer,
+                                                                     RpMsgTxInterface *rpmsg,
                                                                      Queue<Color,COLOR_QUEUE_SIZE> &colorQueue,
-                                                                     ColorDetect &colorDetect,
+                                                                     CommandInterface *colorDetect,
                                                                      ObjectPool<BrickEjectCommand, 5> &ejectCommandPool)
-    :ControllerStateNormalState(hw, timer),
-      colorQueue(colorQueue),
-      colorDetect(colorDetect),
+    :ControllerStateNormalState(hw, timer, rpmsg),
       ejectCommandPool(ejectCommandPool),
-      lb2BrickUnhandled(false)
+      lb2BrickUnhandled(false),
+      colorQueue(colorQueue),
+      colorDetect(colorDetect)
 {
 
 }
 
 void ControllerStateNormalStateStarted::onEntry()
 {
-    hw.motor.start();
+    colorQueue.clear();
+    hw.motor->start();
+    timer->registerCommand(colorDetect,5);
+}
+
+void ControllerStateNormalStateStarted::onExit()
+{
+    hw.motor->stop();
+    timer->unregisterCommand(colorDetect);
+    colorQueue.clear();
 }
 
 void ControllerStateNormalStateStarted::processCmd(uint8_t cmd)
@@ -35,7 +46,7 @@ void ControllerStateNormalStateStarted::processCmd(uint8_t cmd)
     switch(cmd)
     {
         case CMD_STOP:
-            pSuperState->setState(&pSuperState->state_stopped, hw);
+            pSuperState->setState(&pSuperState->state_stopped);
 
     }
 }
@@ -48,14 +59,14 @@ void ControllerStateNormalStateStarted::brickEjectCommandDone(BrickEjectCommand 
 
 void ControllerStateNormalStateStarted::doIt()
 {
-    if(hw.lightBarrier1.isInterrupted()) // brick after color detection?
+    if(hw.lightBarrier1->isInterrupted()) // brick after color detection?
     {
         if(lb2BrickUnhandled)   // brick unhandled?
         {
-            post_info(0xaa);
+            rpmsg->post_info(0xaa);
             Color color = colorQueue.pull(); // get detected color
 
-            post_info(color);
+            rpmsg->post_info(color);
 
             BrickEjectCommand *command = ejectCommandPool.getObject();
             if(command)
