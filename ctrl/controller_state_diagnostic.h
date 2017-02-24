@@ -12,6 +12,7 @@ public:
     ControllerStateDiagnostic(Hw &hw, TimerInterface *timer, RpMsgTxInterface *rpmsg);
 
     void processCmd(Controller &controller, uint8_t cmd);
+    void onEntry();
 };
 
 #endif // CONTROLLERSTATEDIAGNOSTIC_H

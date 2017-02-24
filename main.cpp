@@ -47,7 +47,6 @@ extern "C" {
 #include "adc.h"
 #include "scheduled_output_action.h"
 #include "timer.h"
-#include "util.h"
 #include "msg_definition.h"
 #include "light_barrier.h"
 #include "controller.h"
@@ -59,7 +58,8 @@ extern "C" {
 #include "color_detect.h"
 #include "brick_eject_command.h"
 #include "controller_state_diagnostic.h"
-#include "controller_state_normal.h"
+#include "controller_state_normal_started.h"
+#include "controller_state_normal_stopped.h"
 #include "rpmsg.h"
 #include "rpmsg_rx_interface.h"
 #include "rpmsg_tx_interface.h"
@@ -124,10 +124,9 @@ ObjectPool<BrickEjectCommand, 5> ejectCommandPool;
 RpMsgTrx rpmsg;
 
 ControllerStateDiagnostic stateDiagnostic(hw, &timer, &rpmsg);
-ControllerStateNormalStateStarted state_started(hw, &timer, &rpmsg, colorQueue, &colorDetect, ejectCommandPool);
-ControllerStateNormalStateStopped state_stopped(hw, &timer, &rpmsg);
-ControllerStateNormal stateNormal(hw, &timer, &rpmsg, state_started, state_stopped);
-Controller ctrl(hw, &rpmsg, stateDiagnostic, stateNormal);
+ControllerStateNormalStarted state_started(hw, &timer, &rpmsg, colorQueue, &colorDetect, ejectCommandPool);
+ControllerStateNormalStopped state_stopped(hw, &timer, &rpmsg);
+Controller ctrl(hw, &rpmsg, stateDiagnostic, state_stopped, state_started);
 
 
 void main() {

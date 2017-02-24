@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 3.5.1, 2017-02-24T11:42:22. -->
+<!-- Written by QtCreator 3.5.1, 2017-02-24T15:55:33. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -254,6 +254,7 @@
     <valuelist type="QVariantList" key="ProjectExplorer.BuildConfiguration.UserEnvironmentChanges">
      <value type="QString">PRU_CGT=/home/christoph/prg/ti-cgt-pru_2.1.4</value>
      <value type="QString">PRU_LIB=/home/christoph/prg/ti-processor-sdk-linux-am335x-evm-03.02.00.05/example-applications/pru-icss-5.1.0</value>
+     <value type="QString">BUILD_DIR=/home/christoph/projects/pru-farbsort</value>
     </valuelist>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Default</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Default</value>

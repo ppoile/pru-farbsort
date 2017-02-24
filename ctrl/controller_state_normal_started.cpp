@@ -1,23 +1,24 @@
-#include "controller_state_normal_state_started.h"
-#include "controller_state_normal.h"
+#include "controller_state_normal_started.h"
 #include "controller.h"
 #include "motor.h"
 #include "msg_definition.h"
-#include "controller_state_normal_state_stopped.h"
+#include "controller_state_normal_stopped.h"
 #include "hw.h"
 #include "light_barrier.h"
 #include "rpmsg_tx_interface.h"
+#include "controller_state.h"
+#include "timer_interface.h"
 
 int16_t post_info(char info);
 
 
-ControllerStateNormalStateStarted::ControllerStateNormalStateStarted(Hw &hw,
+ControllerStateNormalStarted::ControllerStateNormalStarted(Hw &hw,
                                                                      TimerInterface *timer,
                                                                      RpMsgTxInterface *rpmsg,
                                                                      Queue<Color,COLOR_QUEUE_SIZE> &colorQueue,
                                                                      CommandInterface *colorDetect,
                                                                      ObjectPool<BrickEjectCommand, 5> &ejectCommandPool)
-    :ControllerStateNormalState(hw, timer, rpmsg),
+    :ControllerState(hw, timer, rpmsg),
       ejectCommandPool(ejectCommandPool),
       lb2BrickUnhandled(false),
       colorQueue(colorQueue),
@@ -26,38 +27,44 @@ ControllerStateNormalStateStarted::ControllerStateNormalStateStarted(Hw &hw,
 
 }
 
-void ControllerStateNormalStateStarted::onEntry()
+void ControllerStateNormalStarted::onEntry()
 {
     colorQueue.clear();
     hw.motor->start();
     timer->registerCommand(colorDetect,5);
 }
 
-void ControllerStateNormalStateStarted::onExit()
+void ControllerStateNormalStarted::onExit()
 {
     hw.motor->stop();
     timer->unregisterCommand(colorDetect);
     colorQueue.clear();
+    rpmsg->post_info(INFO_CTRL_STOP);
 }
 
-void ControllerStateNormalStateStarted::processCmd(uint8_t cmd)
+void ControllerStateNormalStarted::processCmd(Controller &controller, uint8_t cmd)
 {
 
     switch(cmd)
     {
         case CMD_STOP:
-            pSuperState->setState(&pSuperState->state_stopped);
+            controller.setState(&controller.state_normal_stopped);
+            break;
+
+        case CMD_MODE_DIAGNOSTIC:
+            controller.setState(&controller.state_diagnostic);
+            break;
 
     }
 }
 
-void ControllerStateNormalStateStarted::brickEjectCommandDone(BrickEjectCommand *command)
+void ControllerStateNormalStarted::brickEjectCommandDone(BrickEjectCommand *command)
 {
     ejectCommandPool.free(command);
 }
 
 
-void ControllerStateNormalStateStarted::doIt()
+void ControllerStateNormalStarted::doIt()
 {
     if(hw.lightBarrier1->isInterrupted()) // brick after color detection?
     {

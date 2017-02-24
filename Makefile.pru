@@ -17,20 +17,20 @@ CURRENT_DIR := $(notdir $(patsubst %/,%,$(dir $(MKFILE_PATH))))
 PROJ_NAME=$(CURRENT_DIR)
 LINKER_COMMAND_FILE=./AM335x_PRU.cmd
 LIBS=--library=$(PRU_LIB)/lib/rpmsg_lib.lib
-INCLUDE=--include_path=$(PRU_LIB)/include --include_path=$(PRU_LIB)/include/am335x
+INCLUDE=--include_path=$(PRU_LIB)/include --include_path=$(PRU_LIB)/include/am335x --include_path=./hw --include_path=./ctrl --include_path=$(BUILD_DIR) --include_path=$(BUILD_DIR)/hw
 STACK_SIZE=0x100
 HEAP_SIZE=0x100
 GEN_DIR=gen
 
 #Common compiler and linker flags (Defined in 'PRU Optimizing C/C++ Compiler User's Guide)
-CFLAGS=-v3 -O4 --display_error_number --endian=little --hardware_mac=on --obj_directory=$(GEN_DIR) --pp_directory=$(GEN_DIR) -ppd -ppa
+CFLAGS=-v3 -O2 --display_error_number --endian=little --hardware_mac=on --obj_directory=$(GEN_DIR) --pp_directory=$(GEN_DIR) -ppd -ppa
 #Linker flags (Defined in 'PRU Optimizing C/C++ Compiler User's Guide)
 LFLAGS=--reread_libs --warn_sections --stack_size=$(STACK_SIZE) --heap_size=$(HEAP_SIZE)
 
 TARGET=$(GEN_DIR)/$(PROJ_NAME).out
 MAP=$(GEN_DIR)/$(PROJ_NAME).map
 #Using .object instead of .obj in order to not conflict with the CCS build process
-OBJECTS=$(GEN_DIR)/main.object $(GEN_DIR)/timer.object $(GEN_DIR)/scheduled_output_action.object $(GEN_DIR)/adc.object $(GEN_DIR)/util.object $(GEN_DIR)/light_barrier.object $(GEN_DIR)/controller.object $(GEN_DIR)/controller_state_diagnostic.object $(GEN_DIR)/controller_state_normal.object $(GEN_DIR)/motor.object $(GEN_DIR)/gpio.object $(GEN_DIR)/gpi.object $(GEN_DIR)/gpo.object $(GEN_DIR)/piston.object $(GEN_DIR)/controller_state_normal_state.object $(GEN_DIR)/controller_state_normal_state_stopped.object $(GEN_DIR)/controller_state_normal_state_started.object $(GEN_DIR)/color_detect.object $(GEN_DIR)/brick_eject_command.object $(GEN_DIR)/rpmsg.object
+OBJECTS=$(GEN_DIR)/main.object $(GEN_DIR)/hw/timer.object $(GEN_DIR)/scheduled_output_action.object $(GEN_DIR)/hw/adc.object $(GEN_DIR)/hw/light_barrier.object $(GEN_DIR)/ctrl/controller.object $(GEN_DIR)/ctrl/controller_state_diagnostic.object $(GEN_DIR)/hw/motor.object $(GEN_DIR)/hw/gpio.object $(GEN_DIR)/hw/gpi.object $(GEN_DIR)/hw/gpo.object $(GEN_DIR)/hw/piston.object $(GEN_DIR)/ctrl/controller_state_normal_stopped.object $(GEN_DIR)/ctrl/controller_state_normal_started.object $(GEN_DIR)/color_detect.object $(GEN_DIR)/brick_eject_command.object $(GEN_DIR)/rpmsg.object
 
 all: printStart $(TARGET) printEnd
 
@@ -58,6 +58,8 @@ $(TARGET): $(OBJECTS) $(LINKER_COMMAND_FILE)
 # Invokes the compiler on all cpp files in the directory to create the object files
 $(GEN_DIR)/%.object: %.cpp
 	@mkdir -p $(GEN_DIR)
+	@mkdir -p $(GEN_DIR)/hw
+	@mkdir -p $(GEN_DIR)/ctrl
 	@echo ''
 	@echo 'Building file: $<'
 	@echo 'Invoking: PRU Compiler'

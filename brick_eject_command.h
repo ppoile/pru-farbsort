@@ -3,7 +3,7 @@
 
 #include "command_interface.h"
 #include "common.h"
-#include "controller_state_normal_state_started.h"
+#include "controller_state_normal_started.h"
 #include "brick_eject_command_done_interface.h"
 
 class TimerInterface;

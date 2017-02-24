@@ -1,22 +1,22 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "../common.h"
-#include "../hw.h"
-#include "../queue.h"
-#include "../motor_interface.h"
-#include "../piston_interface.h"
-#include "../light_barrier.h"
-#include "../adc_interface.h"
-#include "../color_detect.h"
-#include "../timer_interface.h"
-#include "../command_interface.h"
-#include "../controller.h"
-#include "../controller_state_diagnostic.h"
-#include "../controller_state_normal.h"
-#include "../controller_state_normal_state_stopped.h"
-#include "../controller_state_normal_state_started.h"
-#include "../rpmsg_tx_interface.h"
-#include "../rpmsg_rx_interface.h"
+#include "common.h"
+#include "hw.h"
+#include "queue.h"
+#include "motor_interface.h"
+#include "piston_interface.h"
+#include "light_barrier.h"
+#include "adc_interface.h"
+#include "color_detect.h"
+#include "timer_interface.h"
+#include "command_interface.h"
+#include "controller.h"
+#include "controller_state_diagnostic.h"
+#include "controller_state_normal_stopped.h"
+#include "controller_state_normal_started.h"
+#include "rpmsg_tx_interface.h"
+#include "rpmsg_rx_interface.h"
+#include "msg_definition.h"
 
 
 using namespace testing;
@@ -75,7 +75,7 @@ protected:
     {};
 
     Hw hw;
-    ControllerStateNormalStateStarted state;
+    ControllerStateNormalStarted state;
     MockMotor motor;
     MockPiston p1;
     MockPiston p2;
@@ -110,6 +110,8 @@ TEST_F(CtrlStateNormalStartedTest, stateExit_shallStopMotorAndColorDetection)
     EXPECT_CALL(motor, stop()).Times(1);
     // color dectection shall be stopped
     EXPECT_CALL(timer, unregisterCommand(&colorDetectCommand)).Times(1);
+    // informs with rpmsg
+    EXPECT_CALL(rpmsgtx, post_info(INFO_CTRL_STOP));
 
     state.onExit();
 }

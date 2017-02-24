@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include "controller_state_diagnostic.h"
 #include "controller.h"
-#include "controller_state_normal.h"
 #include "motor.h"
 #include "msg_definition.h"
 #include "piston.h"
@@ -28,7 +27,7 @@ void ControllerStateDiagnostic::processCmd(Controller &controller, uint8_t cmd)
 
             rpmsg->post_info(INFO_CTRL_STOP);
 
-            controller.setState(&controller.state_normal);
+            controller.setState(&controller.state_normal_stopped);
             break;
 
         case CMD_MOTOR_START:
@@ -65,4 +64,12 @@ void ControllerStateDiagnostic::processCmd(Controller &controller, uint8_t cmd)
 
     }
 
+}
+
+void ControllerStateDiagnostic::onEntry()
+{
+    hw.motor->stop();
+    hw.piston0->pull();
+    hw.piston1->pull();
+    hw.piston2->pull();
 }

@@ -1,5 +1,4 @@
 #include "controller.h"
-#include "controller_state_normal.h"
 #include "controller_state_diagnostic.h"
 #include "motor.h"
 #include "version.h"
@@ -14,13 +13,14 @@
 extern uint8_t adc_values[200];
 #endif
 
-Controller::Controller(Hw &hw, RpMsgTxInterface *rpmsg, ControllerStateDiagnostic &state_diagnostic, ControllerStateNormal &state_normal):
+Controller::Controller(Hw &hw, RpMsgTxInterface *rpmsg, ControllerStateDiagnostic &state_diagnostic, ControllerStateNormalStopped &state_normal_stopped, ControllerStateNormalStarted &state_normal_started):
                     state_diagnostic(state_diagnostic),
-                    state_normal(state_normal),
+                    state_normal_stopped(state_normal_stopped),
+                    state_normal_started(state_normal_started),
                     hw(hw),
                     rpmsg(rpmsg)
 {
-    pState = &state_normal;
+    pState = &state_normal_started;
     rpmsg->registerReceiver(this);
 
 }
@@ -44,7 +44,7 @@ void Controller::processCmd(uint8_t cmd)
             break;
 
         case CMD_RESET:
-            setState(&state_normal);
+            setState(&state_normal_started);
             break;
 
     }
@@ -86,13 +86,13 @@ void Controller::handleGetAllInfo()
     else {
       rpmsg->post_info(INFO_VALVE_3_OFF);
     }
-    if (pState == &state_normal) {
-      rpmsg->post_info(INFO_MODE_NORMAL);
-    }
-    else {
+    if (pState == &state_diagnostic)  {
       rpmsg->post_info(INFO_MODE_DIAGNOSTIC);
     }
-    if (state_normal.getState() == &state_normal.state_started) {
+    else {
+      rpmsg->post_info(INFO_MODE_NORMAL);
+    }
+    if (pState == &state_normal_started) {
       rpmsg->post_info(INFO_CTRL_START);
     }
     else {
