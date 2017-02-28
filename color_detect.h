@@ -25,7 +25,7 @@ private:
     TimerInterface *timer;
     Queue<Color, COLOR_QUEUE_SIZE> &colorQueue;
 
-    void evalColor(uint16_t adc);
+    void evalColor(uint16_t adc, bool minimum);
 };
 
 #endif // COLORDETECT_H

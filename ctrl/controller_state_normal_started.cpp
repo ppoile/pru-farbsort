@@ -67,11 +67,8 @@ void ControllerStateNormalStarted::doIt()
     {
         if(lb2BrickUnhandled)   // brick unhandled?
         {
-            rpmsg->post_info(0xaa);
             Color color = colorQueue.pull(); // get detected color
-
             rpmsg->post_info(color);
-
             BrickEjectCommand *command = ejectCommandPool.getObject();
             if(command)
             {

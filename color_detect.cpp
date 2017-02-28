@@ -45,11 +45,11 @@ void ColorDetect::execute()
 
     if(((diff > 0) && (diffOld <= 0)) && (diffDiff > 0))// minimum shortly missed?
     {
-         evalColor(adcOld);
+         evalColor(adcOld, true);
     }
     else if(((diff < 0) && (diffOld >=0)) && (diffDiff < 0)) // maximum shortly missed
     {
-        evalColor(adcOld);
+        evalColor(adcOld, false);
     }
 
     adcOld = adc;
@@ -59,25 +59,39 @@ void ColorDetect::execute()
     timer->registerCommand(this,5);
 }
 
-void ColorDetect::evalColor(uint16_t adc)
+void ColorDetect::evalColor(uint16_t adc, bool minimum)
 {
     Color color;
 
-    if(adc > thresholdBlack)
+    if(minimum)
     {
-        color = BLACK;
-    }
-    else if (adc > thresholdBlue)
-    {
-        color = BLUE;
-    }
-    else if (adc > thresholdRed)
-    {
-        color = RED;
+        if(adc > thresholdBlack)
+        {
+            color = BLACK;
+        }
+        else if (adc > thresholdBlue)
+        {
+            color = BLUE;
+        }
+        else if (adc > thresholdRed)
+        {
+            color = RED;
+        }
+        else
+        {
+            color = WHITE;
+        }
     }
     else
     {
-        color = WHITE;
+        if(adc > thresholdBlack)
+        {
+            color = BLACK;
+        }
+        else
+        {
+            color = lastColor;
+        }
     }
 
     if(color != lastColor) // color changed?

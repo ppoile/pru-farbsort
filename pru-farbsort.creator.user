@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 3.5.1, 2017-02-24T15:55:33. -->
+<!-- Written by QtCreator 3.5.1, 2017-02-28T15:37:40. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -8,7 +8,7 @@
  </data>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
-  <value type="int">0</value>
+  <value type="int">1</value>
  </data>
  <data>
   <variable>ProjectExplorer.Project.EditorSettings</variable>
@@ -105,8 +105,8 @@
     <value type="int" key="ProjectExplorer.BuildConfiguration.BuildStepListCount">2</value>
     <value type="bool" key="ProjectExplorer.BuildConfiguration.ClearSystemEnvironment">false</value>
     <valuelist type="QVariantList" key="ProjectExplorer.BuildConfiguration.UserEnvironmentChanges">
-     <value type="QString">PRU_CGT=${HOME}/prg/ti-cgt-pru_2.1.3</value>
-     <value type="QString">PRU_LIB=${HOME}/prg/ti-processor-sdk-linux-am335x-evm-03.01.00.06/example-applications/pru-icss-4.0.2</value>
+     <value type="QString">PRU_CGT=${HOME}/prg/ti-cgt-pru_2.1.4</value>
+     <value type="QString">PRU_LIB=${HOME}/prg/ti-processor-sdk-linux-am335x-evm-03.02.00.05/example-applications/pru-icss-5.1.0</value>
     </valuelist>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Default</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Default</value>
@@ -252,9 +252,9 @@
     <value type="int" key="ProjectExplorer.BuildConfiguration.BuildStepListCount">2</value>
     <value type="bool" key="ProjectExplorer.BuildConfiguration.ClearSystemEnvironment">false</value>
     <valuelist type="QVariantList" key="ProjectExplorer.BuildConfiguration.UserEnvironmentChanges">
-     <value type="QString">PRU_CGT=/home/christoph/prg/ti-cgt-pru_2.1.4</value>
-     <value type="QString">PRU_LIB=/home/christoph/prg/ti-processor-sdk-linux-am335x-evm-03.02.00.05/example-applications/pru-icss-5.1.0</value>
-     <value type="QString">BUILD_DIR=/home/christoph/projects/pru-farbsort</value>
+     <value type="QString">PRU_CGT=${HOME}/prg/ti-cgt-pru_2.1.4</value>
+     <value type="QString">BUILD_DIR=${HOME}/projects/pru-farbsort</value>
+     <value type="QString">PRU_LIB=${HOME}/prg/ti-processor-sdk-linux-am335x-evm-03.02.00.05/example-applications/pru-icss-5.1.0</value>
     </valuelist>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Default</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Default</value>

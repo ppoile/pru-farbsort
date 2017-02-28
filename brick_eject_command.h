@@ -22,7 +22,7 @@ public:
     void execute();
 
 private:
-    static PistonInterface *piston;
+    PistonInterface *piston;
     static TimerInterface *timer;
     static BrickEjectCommandDoneInterface *callback;
 

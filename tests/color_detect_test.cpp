@@ -101,7 +101,7 @@ TEST_F(ColorDetectTest, 3AdcValuesDefiningRed_ShallDetectColorRed)
     ASSERT_EQ(queue.pull(), RED);
 }
 
-TEST_F(ColorDetectTest, 3AdcValuesDefiningRed_ShallDetectColorWhite)
+TEST_F(ColorDetectTest, 3AdcValuesDefiningWhite_ShallDetectColorWhite)
 {
     EXPECT_CALL(adc, read())
             .Times(3)
@@ -121,5 +121,88 @@ TEST_F(ColorDetectTest, 3AdcValuesDefiningRed_ShallDetectColorWhite)
     ASSERT_EQ(queue.pull(), WHITE);
 }
 
+TEST_F(ColorDetectTest, 3AdcValuesDefiningWhiteRedBlue_ShallDetectColorsWhiteRedBlue)
+{
+    EXPECT_CALL(adc, read())
+            .Times(7)
+            .WillOnce(Return(1228))
+            .WillOnce(Return(780))
+            .WillOnce(Return(1228))
+            .WillOnce(Return(820))
+            .WillOnce(Return(1228))
+            .WillOnce(Return(1185))
+            .WillOnce(Return(1228));
+
+    // color detect shall register itself to keep running
+    EXPECT_CALL(timer, registerCommand(_, _))
+            .Times(7);
+
+    colorDetect.execute();
+    colorDetect.execute();
+    colorDetect.execute();
+    colorDetect.execute();
+    colorDetect.execute();
+    colorDetect.execute();
+    colorDetect.execute();
+
+    ASSERT_FALSE(queue.isEmpty());
+    ASSERT_EQ(queue.pull(), WHITE);
+    ASSERT_EQ(queue.pull(), RED);
+    ASSERT_EQ(queue.pull(), BLUE);
+}
+
+TEST_F(ColorDetectTest, 3AdcValuesDefiningWhiteRedInShortDistance_ShallDetectColorsWhiteRed)
+{
+    // local maximum (1185) is not a blue, it's the transition betwen white and red
+    EXPECT_CALL(adc, read())
+            .Times(5)
+            .WillOnce(Return(1228))
+            .WillOnce(Return(780))
+            .WillOnce(Return(1185))
+            .WillOnce(Return(820))
+            .WillOnce(Return(1228));
+
+    // color detect shall register itself to keep running
+    EXPECT_CALL(timer, registerCommand(_, _))
+            .Times(5);
+
+    colorDetect.execute();
+    colorDetect.execute();
+    colorDetect.execute();
+    colorDetect.execute();
+    colorDetect.execute();
+
+
+    ASSERT_FALSE(queue.isEmpty());
+    ASSERT_EQ(queue.pull(), WHITE);
+    ASSERT_EQ(queue.pull(), RED);
+    ASSERT_TRUE(queue.isEmpty());
+}
+
+TEST_F(ColorDetectTest, 3AdcValuesDefiningBlueBouncing_ShallDetectOnlyOneBlue)
+{
+    EXPECT_CALL(adc, read())
+            .Times(5)
+            .WillOnce(Return(1228))
+            .WillOnce(Return(1185))
+            .WillOnce(Return(1200))
+            .WillOnce(Return(1185))
+            .WillOnce(Return(1228));
+
+    // color detect shall register itself to keep running
+    EXPECT_CALL(timer, registerCommand(_, _))
+            .Times(5);
+
+    colorDetect.execute();
+    colorDetect.execute();
+    colorDetect.execute();
+    colorDetect.execute();
+    colorDetect.execute();
+
+
+    ASSERT_FALSE(queue.isEmpty());
+    ASSERT_EQ(queue.pull(), BLUE);
+    ASSERT_TRUE(queue.isEmpty());
+}
 
 

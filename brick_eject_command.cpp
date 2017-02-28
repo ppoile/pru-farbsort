@@ -5,12 +5,11 @@
 
 namespace
 {
-    const uint16_t PUSH_TIME = 30;  // 300 ms, in units of 10 ms
+    const uint16_t PUSH_TIME = 10;  // 100 ms, in units of 10 ms
 
-    const uint16_t delay[] = {55, 150, 240};
+    const uint16_t delay[] = {50, 140, 230}; // 500 ms, 1.4s, 2.3s
 }
 
-PistonInterface *BrickEjectCommand::piston;
 TimerInterface *BrickEjectCommand::timer;
 BrickEjectCommandDoneInterface *BrickEjectCommand::callback;
 
@@ -50,13 +49,13 @@ void BrickEjectCommand::ejectColor(Hw &hw, TimerInterface *timer, Color color, B
 
     }
 
-    if(ticks)
+    if(ticks) // valid color to eject
     {
         timer->registerCommand(this, ticks);
     }
-    else
+    else // invalid color
     {
-        callback->brickEjectCommandDone(this);
+        callback->brickEjectCommandDone(this); // mark command as done
     }
 
 }
