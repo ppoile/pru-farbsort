@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS=-g -c -Wall -std=c++14
 LDFLAGS=
-SOURCES= tests/tests.cpp tests/queuetest.cpp tests/color_detect_test.cpp tests/controller_state_started_test.cpp tests/controller_test.cpp hw/gpio.cpp color_detect.cpp ctrl/controller.cpp brick_eject_command.cpp ctrl/controller_state_normal_started.cpp ctrl/controller_state_normal_stopped.cpp  ctrl/controller_state_diagnostic.cpp
+SOURCES= tests/tests.cpp tests/queue_test.cpp tests/color_detect_test.cpp tests/controller_test.cpp hw/gpio.cpp color_detect.cpp ctrl/controller.cpp brick_eject_command.cpp ctrl/controller_state_normal_started.cpp ctrl/controller_state_normal_stopped.cpp  ctrl/controller_state_diagnostic.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=tests/tests
 INCLUDES=-I googletest/googletest/include -I googletest/googlemock/include -I $(PRU_LIB)/include -I $(PRU_LIB)/include/am335x -I $(CURDIR) -I $(CURDIR)/hw -I $(CURDIR)/ctrl

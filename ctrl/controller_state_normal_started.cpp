@@ -36,10 +36,7 @@ void ControllerStateNormalStarted::onEntry()
 
 void ControllerStateNormalStarted::onExit()
 {
-    hw.motor->stop();
     timer->unregisterCommand(colorDetect);
-    colorQueue.clear();
-    rpmsg->post_info(INFO_CTRL_STOP);
 }
 
 void ControllerStateNormalStarted::processCmd(Controller &controller, uint8_t cmd)

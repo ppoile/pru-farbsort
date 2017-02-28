@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include "../common.h"
-#include "../queue.h"
+#include "common.h"
+#include "queue.h"
 
 TEST(QueueTest, StoreItems_RetrieveThem)
 {

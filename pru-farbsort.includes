@@ -1,8 +1,11 @@
 .
-/home/christoph/prg/ti-processor-sdk-linux-am335x-evm-03.02.00.05/example-applications/pru-icss-5.1.0/include
-/home/christoph/prg/ti-processor-sdk-linux-am335x-evm-03.02.00.05/example-applications/pru-icss-5.1.0/include/am335x
-/home/christoph/projects/pru-farbsort/googletest/googletest/include
-/home/christoph/projects/pru-farbsort/googletest/googlemock/include
+googletest/googletest/include
+googletest/googlemock/include
+
+$$(HOME)/projects/pru-farbsort/hw
 tests
-hw
 ctrl
+
+
+$$(HOME)/prg/ti-processor-sdk-linux-am335x-evm-03.02.00.05/example-applications/pru-icss-5.1.0/include/am335x
+$$(HOME)/prg/ti-processor-sdk-linux-am335x-evm-03.02.00.05/example-applications/pru-icss-5.1.0/include

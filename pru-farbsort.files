@@ -54,7 +54,6 @@ rpmsg.cpp
 rpmsg_rx_interface.h
 rpmsg_tx_interface.h
 tests/tests.cpp
-tests/queuetest.cpp
+tests/queue_test.cpp
 tests/color_detect_test.cpp
 tests/controller_test.cpp
-tests/controller_state_started_test.cpp

@@ -1,15 +1,15 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "../common.h"
-#include "../hw.h"
-#include "../queue.h"
-#include "../motor.h"
-#include "../piston.h"
-#include "../light_barrier.h"
-#include "../adc_interface.h"
-#include "../color_detect.h"
-#include "../timer_interface.h"
-#include "../command_interface.h"
+#include "common.h"
+#include "hw.h"
+#include "queue.h"
+#include "motor.h"
+#include "piston.h"
+#include "light_barrier.h"
+#include "adc_interface.h"
+#include "color_detect.h"
+#include "timer_interface.h"
+#include "command_interface.h"
 
 using namespace testing;
 

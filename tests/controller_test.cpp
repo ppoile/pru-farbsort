@@ -119,16 +119,13 @@ TEST(ControllerTest, Construction_shallRegisterForIncommingMessages)
 
 }
 
-TEST_F(ControllerTest2, Diagnostic_shallStopMotorAndAllowHWControll)
+TEST_F(ControllerTest2, Diagnostic_shallInitHwAndAllowHWControll)
 {
-    // rpmsg Feedback requestd
-    EXPECT_CALL(rpmsgtx, post_info(INFO_CTRL_STOP));
     // hw initialized
-    EXPECT_CALL(motor, stop()).Times(2);
+    EXPECT_CALL(motor, stop());
     EXPECT_CALL(p1, pull());
     EXPECT_CALL(p2, pull());
     EXPECT_CALL(p3, pull());
-    EXPECT_CALL(timer, unregisterCommand(&colorDetectCommand));
 
     ctrl.processCmd(CMD_MODE_DIAGNOSTIC);
 
@@ -157,9 +154,68 @@ TEST_F(ControllerTest2, Diagnostic_shallStopMotorAndAllowHWControll)
     ctrl.processCmd(CMD_VALVE_3_OFF);
 
 }
-/*
-TEST_F(ControllerTest2, Normal_shallStartMotorAndDoColorDetection)
+
+
+TEST_F(ControllerTest2, StateNormalStartAndStop_shallStartAndStopMotorAndColorDetection)
 {
-    EXPECT_CALL(motor, start());
+    // motor for conveyor belt shall be started
+    EXPECT_CALL(motor, start()).Times(1);
+    // color dectection shall be started in 50ms
+    EXPECT_CALL(timer, registerCommand(&colorDetectCommand,5)).Times(1);
+
     ctrl.processCmd(CMD_START);
-}*/
+
+    // motor for conveyor belt shall be stopped
+    EXPECT_CALL(motor, stop()).Times(1);
+    EXPECT_CALL(p1, pull());
+    EXPECT_CALL(p2, pull());
+    EXPECT_CALL(p3, pull());
+    // color dectection shall be stopped
+    EXPECT_CALL(timer, unregisterCommand(&colorDetectCommand)).Times(1);
+
+    ctrl.processCmd(CMD_STOP);
+
+}
+
+TEST_F(ControllerTest2, EmergencyStop_shallInitHw)
+{
+    EXPECT_CALL(lbEmergencyStop, isInterrupted()).Times(1).WillOnce(Return(true));
+
+    // hw shall be inited
+    EXPECT_CALL(motor, stop()).Times(1);
+    EXPECT_CALL(p1, pull());
+    EXPECT_CALL(p2, pull());
+    EXPECT_CALL(p3, pull());
+
+    ctrl.doIt();
+
+    // hw shall be inited (because of state change to diagnostic)
+    EXPECT_CALL(motor, stop());
+    EXPECT_CALL(p1, pull());
+    EXPECT_CALL(p2, pull());
+    EXPECT_CALL(p3, pull());
+
+    ctrl.processCmd(CMD_MODE_DIAGNOSTIC);
+
+    EXPECT_CALL(lbEmergencyStop, isInterrupted())
+            .Times(1)
+            .WillOnce(Return(false));
+
+    ctrl.doIt();
+
+    // simulate an emergency stop
+    EXPECT_CALL(lbEmergencyStop, isInterrupted())
+            .Times(1)
+            .WillOnce(Return(true));
+    EXPECT_CALL(motor, stop());
+    EXPECT_CALL(p1, pull());
+    EXPECT_CALL(p2, pull());
+    EXPECT_CALL(p3, pull());
+
+    ctrl.doIt();
+
+
+
+
+
+}

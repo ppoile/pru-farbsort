@@ -20,7 +20,7 @@ Controller::Controller(Hw &hw, RpMsgTxInterface *rpmsg, ControllerStateDiagnosti
                     hw(hw),
                     rpmsg(rpmsg)
 {
-    pState = &state_normal_started;
+    pState = &state_normal_stopped;
     rpmsg->registerReceiver(this);
 
 }
@@ -126,6 +126,13 @@ void Controller::handleGetAllInfo()
 
 void Controller::doIt()
 {
+    // handling of emergency stop is independent of state
+    if(hw.lightBarrierEmergencyStop->isInterrupted())
+    {
+        setState(&this->state_normal_stopped);
+    }
+
+    // handle state specific behaviour
     pState->doIt();
 }
 
