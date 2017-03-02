@@ -77,7 +77,11 @@ RpMsgTrx rpmsg;
 
 // init hw components
 Motor motor(Gpio::MOTOR_MASK);
-Piston piston[] = { Piston(Gpio::VALVE1_MASK), Piston(Gpio::VALVE2_MASK), Piston(Gpio::VALVE3_MASK) };
+
+Piston piston[] = { Piston(1, Gpio::VALVE1_MASK, &rpmsg),
+                    Piston(2, Gpio::VALVE2_MASK, &rpmsg),
+                    Piston(3, Gpio::VALVE3_MASK, &rpmsg) };
+
 LightBarrier lightBarrier[] = { LightBarrier(1, Gpio::LIGHTBARRIER1_MASK, &rpmsg),
                                 LightBarrier(2, Gpio::LIGHTBARRIER2_MASK, &rpmsg),
                                 LightBarrier(3, Gpio::LIGHTBARRIERS3_TO_5_MASK, &rpmsg) };

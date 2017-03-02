@@ -35,6 +35,13 @@ typedef enum
     INFO_LIGHT_BARRIER_2_BRIGHT = 0x34,
     INFO_LIGHT_BARRIER_2_DARK = 0x35,
 
+    INFO_VALVE_1_ON = 0x36,
+    INFO_VALVE_1_OFF =0x37,
+    INFO_VALVE_2_ON = 0x38,
+    INFO_VALVE_2_OFF = 0x39,
+    INFO_VALVE_3_ON = 0x3a,
+    INFO_VALVE_3_OFF = 0x3b,
+
 
     INFO_VERBOSE_ON = 0x80 + 3,
     INFO_VERBOSE_OFF = 0x80 + 4,
@@ -45,12 +52,7 @@ typedef enum
 
     INFO_MOTOR_START = 0x80 + 9,
     INFO_MOTOR_STOP = 0x80 + 0xA,
-    INFO_VALVE_1_ON = 0x80 + 0xB,
-    INFO_VALVE_1_OFF =0x80 + 0xC,
-    INFO_VALVE_2_ON = 0x80 + 0xD,
-    INFO_VALVE_2_OFF = 0x80 + 0xE,
-    INFO_VALVE_3_ON = 0x80 + 0xF,
-    INFO_VALVE_3_OFF = 0x80 + 0x10,
+
 
     INFO_EMERGENCY_STOP_ON = 0x80 + 0x20,
     INFO_EMERGENCY_STOP_OFF = 0x80 + 0x21,
