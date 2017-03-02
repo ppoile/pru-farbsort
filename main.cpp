@@ -69,6 +69,10 @@ uint8_t adc_values[200];
 uint8_t adc_value_index = 0;
 #endif
 
+
+// init communication to host
+RpMsgTrx rpmsg;
+
 // init hw components
 Motor motor(Gpio::MOTOR_MASK);
 Piston piston[] = { Piston(Gpio::VALVE1_MASK), Piston(Gpio::VALVE2_MASK), Piston(Gpio::VALVE3_MASK) };
@@ -87,15 +91,12 @@ Hw hw(  &motor,
 Timer timer;
 
 Queue<Color,COLOR_QUEUE_SIZE> colorQueue;
-ColorDetect colorDetect(hw, &timer, colorQueue);
+ColorDetect colorDetect(hw, &timer, colorQueue, &rpmsg);
 ObjectPool<BrickEjectCommand, 5> ejectCommandPool;
-
-// init communication to host
-RpMsgTrx rpmsg;
 
 // init controller states
 ControllerStateDiagnostic stateDiagnostic(hw, &timer, &rpmsg);
-ControllerStateNormalStarted state_started(hw, &timer, &rpmsg, colorQueue, &colorDetect, ejectCommandPool);
+ControllerStateNormalStarted state_started(hw, &timer, &rpmsg, colorQueue, ejectCommandPool);
 ControllerStateNormalStopped state_stopped(hw, &timer, &rpmsg);
 
 // init controller
@@ -116,6 +117,7 @@ void main() {
 
     rpmsg.start(); 
     timer.start();
+    timer.registerCommand(&colorDetect,5);
 
     while (1) {
         timer.poll();

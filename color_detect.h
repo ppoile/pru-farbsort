@@ -8,11 +8,12 @@
 class Timer;
 class Hw;
 class TimerInterface;
+class RpMsgTxInterface;
 
 class ColorDetect : public CommandInterface
 {
 public:
-    ColorDetect(Hw &hw, TimerInterface *timer, Queue<Color, COLOR_QUEUE_SIZE> &colorQueue);
+    ColorDetect(Hw &hw, TimerInterface *timer, Queue<Color, COLOR_QUEUE_SIZE> &colorQueue, RpMsgTxInterface *rpmsg);
 
     void execute();
 
@@ -24,6 +25,7 @@ private:
     Hw &hw;
     TimerInterface *timer;
     Queue<Color, COLOR_QUEUE_SIZE> &colorQueue;
+    RpMsgTxInterface *rpmsg;
 
     void evalColor(uint16_t adc, bool minimum);
 };

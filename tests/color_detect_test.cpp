@@ -10,6 +10,8 @@
 #include "color_detect.h"
 #include "timer_interface.h"
 #include "command_interface.h"
+#include "rpmsg_tx_interface.h"
+#include "msg_definition.h"
 
 using namespace testing;
 
@@ -25,19 +27,28 @@ public:
     MOCK_METHOD1(unregisterCommand, void(CommandInterface *command) );
 };
 
+class MockRpMsgTx : public RpMsgTxInterface
+{
+public:
+    MOCK_METHOD2(post_msg, int16_t (char const *event, uint16_t length));
+    MOCK_METHOD1(post_info, int16_t (char info));
+    MOCK_METHOD1(registerReceiver, void(RpMsgRxInterface* messageHandler));
+};
+
 class ColorDetectTest : public ::testing::Test{
 protected:
 
     MockAdc adc;
     MockTimer timer;
     Queue<Color,COLOR_QUEUE_SIZE> queue;
+    MockRpMsgTx rpmsg;
 
     Hw hw;
     ColorDetect colorDetect;
 
     ColorDetectTest():
         hw(0, 0, 0, 0, 0, 0, 0, &adc),
-        colorDetect(hw, &timer, queue){};
+        colorDetect(hw, &timer, queue, &rpmsg){};
 
 };
 
@@ -73,6 +84,8 @@ TEST_F(ColorDetectTest, 3AdcValuesDefiningBlue_ShallDetectColorBlue)
     EXPECT_CALL(timer, registerCommand(_, _))
             .Times(3);
 
+    EXPECT_CALL(rpmsg, post_info(INFO_COLOR_BLUE)).Times(1);
+
     colorDetect.execute();
     colorDetect.execute();
     colorDetect.execute();
@@ -93,6 +106,8 @@ TEST_F(ColorDetectTest, 3AdcValuesDefiningRed_ShallDetectColorRed)
     EXPECT_CALL(timer, registerCommand(_, _))
             .Times(3);
 
+    EXPECT_CALL(rpmsg, post_info(INFO_COLOR_RED)).Times(1);
+
     colorDetect.execute();
     colorDetect.execute();
     colorDetect.execute();
@@ -112,6 +127,8 @@ TEST_F(ColorDetectTest, 3AdcValuesDefiningWhite_ShallDetectColorWhite)
     // color detect shall register itself to keep running
     EXPECT_CALL(timer, registerCommand(_, _))
             .Times(3);
+
+    EXPECT_CALL(rpmsg, post_info(INFO_COLOR_WHITE)).Times(1);
 
     colorDetect.execute();
     colorDetect.execute();
@@ -136,6 +153,10 @@ TEST_F(ColorDetectTest, 3AdcValuesDefiningWhiteRedBlue_ShallDetectColorsWhiteRed
     // color detect shall register itself to keep running
     EXPECT_CALL(timer, registerCommand(_, _))
             .Times(7);
+
+    EXPECT_CALL(rpmsg, post_info(INFO_COLOR_WHITE)).Times(1);
+    EXPECT_CALL(rpmsg, post_info(INFO_COLOR_RED)).Times(1);
+    EXPECT_CALL(rpmsg, post_info(INFO_COLOR_BLUE)).Times(1);
 
     colorDetect.execute();
     colorDetect.execute();
@@ -166,6 +187,9 @@ TEST_F(ColorDetectTest, 3AdcValuesDefiningWhiteRedInShortDistance_ShallDetectCol
     EXPECT_CALL(timer, registerCommand(_, _))
             .Times(5);
 
+    EXPECT_CALL(rpmsg, post_info(INFO_COLOR_WHITE)).Times(1);
+    EXPECT_CALL(rpmsg, post_info(INFO_COLOR_RED)).Times(1);
+
     colorDetect.execute();
     colorDetect.execute();
     colorDetect.execute();
@@ -192,6 +216,8 @@ TEST_F(ColorDetectTest, 3AdcValuesDefiningBlueBouncing_ShallDetectOnlyOneBlue)
     // color detect shall register itself to keep running
     EXPECT_CALL(timer, registerCommand(_, _))
             .Times(5);
+
+    EXPECT_CALL(rpmsg, post_info(INFO_COLOR_BLUE)).Times(1);
 
     colorDetect.execute();
     colorDetect.execute();

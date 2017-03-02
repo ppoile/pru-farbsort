@@ -19,7 +19,6 @@ public:
                                       TimerInterface *timer,
                                       RpMsgTxInterface *rpmsg,
                                       Queue<Color,COLOR_QUEUE_SIZE> &colorQueue,
-                                      CommandInterface *colorDetect,
                                       ObjectPool<BrickEjectCommand, 5> &ejectCommandPool);
 
     void processCmd(Controller &controller, uint8_t cmd);
@@ -31,7 +30,6 @@ private:
     ObjectPool<BrickEjectCommand, 5> &ejectCommandPool;
     bool lb2BrickUnhandled;
     Queue<Color,COLOR_QUEUE_SIZE> &colorQueue;
-    CommandInterface *colorDetect;
 
     void brickEjectCommandDone(BrickEjectCommand *command);
 };

@@ -16,13 +16,11 @@ ControllerStateNormalStarted::ControllerStateNormalStarted(Hw &hw,
                                                                      TimerInterface *timer,
                                                                      RpMsgTxInterface *rpmsg,
                                                                      Queue<Color,COLOR_QUEUE_SIZE> &colorQueue,
-                                                                     CommandInterface *colorDetect,
                                                                      ObjectPool<BrickEjectCommand, 5> &ejectCommandPool)
     :ControllerState(hw, timer, rpmsg),
       ejectCommandPool(ejectCommandPool),
       lb2BrickUnhandled(false),
-      colorQueue(colorQueue),
-      colorDetect(colorDetect)
+      colorQueue(colorQueue)
 {
 
 }
@@ -31,12 +29,11 @@ void ControllerStateNormalStarted::onEntry()
 {
     colorQueue.clear();
     hw.motor->start();
-    timer->registerCommand(colorDetect,5);
 }
 
 void ControllerStateNormalStarted::onExit()
 {
-    timer->unregisterCommand(colorDetect);
+
 }
 
 void ControllerStateNormalStarted::processCmd(Controller &controller, uint8_t cmd)
@@ -68,7 +65,6 @@ void ControllerStateNormalStarted::doIt()
         if(lb2BrickUnhandled)   // brick unhandled?
         {
             Color color = colorQueue.pull(); // get detected color
-            rpmsg->post_info(color);
             BrickEjectCommand *command = ejectCommandPool.getObject();
             if(command)
             {

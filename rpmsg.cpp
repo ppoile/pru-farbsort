@@ -94,10 +94,6 @@ void RpMsgTrx::processMessages()
             rpmsg_connected = true;
 
             messageHandler->processesMessage(payload, len);
-
-            /* Echo the message back to the same address from which we just received */
-            pru_rpmsg_send(&transport, dst, src, payload, len);
-
         }
     }
 }

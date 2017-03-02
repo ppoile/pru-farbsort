@@ -20,13 +20,7 @@ void ControllerStateDiagnostic::processCmd(Controller &controller, uint8_t cmd)
     switch(cmd)
     {
         case CMD_MODE_NORMAL:
-            hw.motor->stop();
-            hw.piston0->pull();
-            hw.piston1->pull();
-            hw.piston2->pull();
-
             rpmsg->post_info(INFO_CTRL_STOP);
-
             controller.setState(&controller.state_normal_stopped);
             break;
 

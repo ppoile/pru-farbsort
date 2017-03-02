@@ -3,6 +3,8 @@
 #include "adc.h"
 #include "timer.h"
 #include "hw.h"
+#include "rpmsg_tx_interface.h"
+#include "msg_definition.h"
 
 #ifdef ADC_LOGGING
 extern uint8_t adc_values[200];
@@ -20,8 +22,8 @@ namespace {
     uint16_t const thresholdRed    =  (adcRefRed + adcRefWhite) / 2;
 }
 
-ColorDetect::ColorDetect(Hw &hw, TimerInterface *timer, Queue<Color, COLOR_QUEUE_SIZE> &colorQueue):
-    adcOld(adcRefBlack), diffOld(0), lastColor(BLACK), hw(hw), timer(timer),  colorQueue(colorQueue)
+ColorDetect::ColorDetect(Hw &hw, TimerInterface *timer, Queue<Color, COLOR_QUEUE_SIZE> &colorQueue, RpMsgTxInterface *rpmsg):
+    adcOld(adcRefBlack), diffOld(0), lastColor(BLACK), hw(hw), timer(timer),  colorQueue(colorQueue), rpmsg(rpmsg)
 {
 
 }
@@ -100,6 +102,7 @@ void ColorDetect::evalColor(uint16_t adc, bool minimum)
         if(color != BLACK)
         {
             colorQueue.push(color);
+            rpmsg->post_info((INFO_COLOR_BLUE - 1) + color);
         }
     }
 

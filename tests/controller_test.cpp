@@ -71,7 +71,7 @@ protected:
     ControllerTest2()
         : hw(&motor,&p1,&p2,&p3,&lb1,&lb2,&lbEmergencyStop, 0),
           stateDiagnostic(hw, &timer, &rpmsgtx),
-          stateStarted(hw, &timer, &rpmsgtx, queue, &colorDetectCommand, ejectCommandPool),
+          stateStarted(hw, &timer, &rpmsgtx, queue, ejectCommandPool),
           stateStopped(hw, &timer, &rpmsgtx),
           ctrl(hw, &rpmsgtx, stateDiagnostic, stateStopped, stateStarted)
     {};
@@ -86,7 +86,6 @@ protected:
     MockTimer timer;
     NiceMock<MockRpMsgTx> rpmsgtx;  // use nice mock becaust ctrl-ctor calls it
     Queue<Color,COLOR_QUEUE_SIZE> queue;
-    MockCommand colorDetectCommand;
     ObjectPool<BrickEjectCommand, 5> ejectCommandPool;
 
 
@@ -103,10 +102,9 @@ TEST(ControllerTest, Construction_shallRegisterForIncommingMessages)
     Hw hw{0,0,0,0,0,0,0,0};
     MockRpMsgTx rpmsgtx;
     MockTimer timer;
-    MockCommand colorDetectCommand;
     Queue<Color,COLOR_QUEUE_SIZE> queue;
     ObjectPool<BrickEjectCommand, 5> ejectCommandPool;
-    ControllerStateNormalStarted stateStarted{hw, &timer, &rpmsgtx, queue, &colorDetectCommand,ejectCommandPool};
+    ControllerStateNormalStarted stateStarted{hw, &timer, &rpmsgtx, queue, ejectCommandPool};
     ControllerStateNormalStopped stateStopped{hw, &timer, &rpmsgtx};
     ControllerStateDiagnostic stateDiagnostic(hw, &timer, &rpmsgtx);
     Controller *pCtrl;
@@ -160,8 +158,6 @@ TEST_F(ControllerTest2, StateNormalStartAndStop_shallStartAndStopMotorAndColorDe
 {
     // motor for conveyor belt shall be started
     EXPECT_CALL(motor, start()).Times(1);
-    // color dectection shall be started in 50ms
-    EXPECT_CALL(timer, registerCommand(&colorDetectCommand,5)).Times(1);
 
     ctrl.processCmd(CMD_START);
 
@@ -170,8 +166,6 @@ TEST_F(ControllerTest2, StateNormalStartAndStop_shallStartAndStopMotorAndColorDe
     EXPECT_CALL(p1, pull());
     EXPECT_CALL(p2, pull());
     EXPECT_CALL(p3, pull());
-    // color dectection shall be stopped
-    EXPECT_CALL(timer, unregisterCommand(&colorDetectCommand)).Times(1);
 
     ctrl.processCmd(CMD_STOP);
 
