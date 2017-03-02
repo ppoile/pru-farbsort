@@ -31,10 +31,6 @@ void ControllerStateNormalStarted::onEntry()
     hw.motor->start();
 }
 
-void ControllerStateNormalStarted::onExit()
-{
-
-}
 
 void ControllerStateNormalStarted::processCmd(Controller &controller, uint8_t cmd)
 {

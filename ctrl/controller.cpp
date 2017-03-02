@@ -29,7 +29,6 @@ Controller::Controller(Hw &hw, RpMsgTxInterface *rpmsg, ControllerStateDiagnosti
 
 void Controller::setState(ControllerState* pNewState)
 {
-    pState->onExit();
     this->pState = pNewState;
     pState->onEntry();
 }

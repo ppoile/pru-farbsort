@@ -19,7 +19,6 @@ public:
 
     virtual void processCmd(Controller &controller, uint8_t cmd) = 0;
     virtual void onEntry(){};
-    virtual void onExit(){};
     virtual void doIt(){};
 
 protected:

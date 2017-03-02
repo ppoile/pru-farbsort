@@ -23,7 +23,6 @@ public:
 
     void processCmd(Controller &controller, uint8_t cmd);
     void onEntry();
-    void onExit();
     void doIt();
 
 private:
