@@ -78,7 +78,9 @@ RpMsgTrx rpmsg;
 // init hw components
 Motor motor(Gpio::MOTOR_MASK);
 Piston piston[] = { Piston(Gpio::VALVE1_MASK), Piston(Gpio::VALVE2_MASK), Piston(Gpio::VALVE3_MASK) };
-LightBarrier lightBarrier[] = { LightBarrier(Gpio::LIGHTBARRIER1_MASK), LightBarrier(Gpio::LIGHTBARRIER2_MASK), LightBarrier(Gpio::LIGHTBARRIERS3_TO_5_MASK) };
+LightBarrier lightBarrier[] = { LightBarrier(1, Gpio::LIGHTBARRIER1_MASK, &rpmsg),
+                                LightBarrier(2, Gpio::LIGHTBARRIER2_MASK, &rpmsg),
+                                LightBarrier(3, Gpio::LIGHTBARRIERS3_TO_5_MASK, &rpmsg) };
 Adc adc;
 PulseCounter pulseCounter(Gpio::PULSECOUNTER_MASK);
 
@@ -128,6 +130,8 @@ void main() {
     conveyorBeltObserver.execute();
 
     while (1) {
+        lightBarrier[0].poll();
+        lightBarrier[1].poll();
         timer.poll();
         pulseCounter.poll();
         ctrl.doIt();
