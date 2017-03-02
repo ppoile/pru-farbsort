@@ -23,14 +23,14 @@ HEAP_SIZE=0x100
 GEN_DIR=gen
 
 #Common compiler and linker flags (Defined in 'PRU Optimizing C/C++ Compiler User's Guide)
-CFLAGS=-v3 -O2 --display_error_number --endian=little --hardware_mac=on --obj_directory=$(GEN_DIR) --pp_directory=$(GEN_DIR) -ppd -ppa
+CFLAGS=-v3 -O4 --display_error_number --endian=little --hardware_mac=on --obj_directory=$(GEN_DIR) --pp_directory=$(GEN_DIR) -ppd -ppa
 #Linker flags (Defined in 'PRU Optimizing C/C++ Compiler User's Guide)
 LFLAGS=--reread_libs --warn_sections --stack_size=$(STACK_SIZE) --heap_size=$(HEAP_SIZE)
 
 TARGET=$(GEN_DIR)/$(PROJ_NAME).out
 MAP=$(GEN_DIR)/$(PROJ_NAME).map
 #Using .object instead of .obj in order to not conflict with the CCS build process
-OBJECTS=$(GEN_DIR)/main.object $(GEN_DIR)/hw/timer.object $(GEN_DIR)/scheduled_output_action.object $(GEN_DIR)/hw/adc.object $(GEN_DIR)/hw/light_barrier.object $(GEN_DIR)/ctrl/controller.object $(GEN_DIR)/ctrl/controller_state_diagnostic.object $(GEN_DIR)/hw/motor.object $(GEN_DIR)/hw/gpio.object $(GEN_DIR)/hw/gpi.object $(GEN_DIR)/hw/gpo.object $(GEN_DIR)/hw/piston.object $(GEN_DIR)/ctrl/controller_state_normal_stopped.object $(GEN_DIR)/ctrl/controller_state_normal_started.object $(GEN_DIR)/color_detect.object $(GEN_DIR)/brick_eject_command.object $(GEN_DIR)/rpmsg.object
+OBJECTS=$(GEN_DIR)/main.object $(GEN_DIR)/hw/timer.object $(GEN_DIR)/scheduled_output_action.object $(GEN_DIR)/hw/adc.object $(GEN_DIR)/hw/light_barrier.object $(GEN_DIR)/ctrl/controller.object $(GEN_DIR)/ctrl/controller_state_diagnostic.object $(GEN_DIR)/hw/motor.object $(GEN_DIR)/hw/pulse_counter.object $(GEN_DIR)/hw/gpio.object $(GEN_DIR)/hw/gpi.object $(GEN_DIR)/hw/gpo.object $(GEN_DIR)/hw/piston.object $(GEN_DIR)/ctrl/controller_state_normal_stopped.object $(GEN_DIR)/ctrl/controller_state_normal_started.object $(GEN_DIR)/color_detect.object $(GEN_DIR)/brick_eject_command.object $(GEN_DIR)/rpmsg.object $(GEN_DIR)/conveyor_belt_observer.object
 
 all: printStart $(TARGET) printEnd
 

@@ -1,6 +1,11 @@
+conveyor_belt_observer.cpp
+conveyor_belt_observer.h
 hw/adc.cpp
 hw/adc.h
 hw/hw.h
+hw/pulse_counter.cpp
+hw/pulse_counter.h
+hw/pulse_counter_interface.h
 hw/timer.cpp
 hw/timer.h
 hw/light_barrier_interface.h
@@ -38,6 +43,7 @@ scheduled_output_action.cpp
 scheduled_output_action.h
 msg_definition.h
 
+tests/conveyor_belt_observer_test.cpp
 version.h
 queue.h
 command_interface.h

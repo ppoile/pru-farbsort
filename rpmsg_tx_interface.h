@@ -1,6 +1,8 @@
 #ifndef RPMSG_INTERFACE
 #define RPMSG_INTERFACE
 
+#include <stdint.h>
+
 class RpMsgRxInterface;
 
 class RpMsgTxInterface{

@@ -63,6 +63,8 @@ extern "C" {
 #include "rpmsg_rx_interface.h"
 #include "rpmsg_tx_interface.h"
 #include "command_interface.h"
+#include "conveyor_belt_observer.h"
+#include "pulse_counter.h"
 
 #ifdef ADC_LOGGING
 uint8_t adc_values[200];
@@ -78,6 +80,7 @@ Motor motor(Gpio::MOTOR_MASK);
 Piston piston[] = { Piston(Gpio::VALVE1_MASK), Piston(Gpio::VALVE2_MASK), Piston(Gpio::VALVE3_MASK) };
 LightBarrier lightBarrier[] = { LightBarrier(Gpio::LIGHTBARRIER1_MASK), LightBarrier(Gpio::LIGHTBARRIER2_MASK), LightBarrier(Gpio::LIGHTBARRIERS3_TO_5_MASK) };
 Adc adc;
+PulseCounter pulseCounter(Gpio::PULSECOUNTER_MASK);
 
 Hw hw(  &motor,
         &piston[0],
@@ -93,6 +96,8 @@ Timer timer;
 Queue<Color,COLOR_QUEUE_SIZE> colorQueue;
 ColorDetect colorDetect(hw, &timer, colorQueue, &rpmsg);
 ObjectPool<BrickEjectCommand, 5> ejectCommandPool;
+
+ConveyorBeltObserver conveyorBeltObserver(&pulseCounter, &timer, &rpmsg);
 
 // init controller states
 ControllerStateDiagnostic stateDiagnostic(hw, &timer, &rpmsg);
@@ -117,10 +122,14 @@ void main() {
 
     rpmsg.start(); 
     timer.start();
-    timer.registerCommand(&colorDetect,5);
+
+    // calling the execute() will start the infinite calling of theses commands
+    colorDetect.execute();
+    conveyorBeltObserver.execute();
 
     while (1) {
         timer.poll();
+        pulseCounter.poll();
         ctrl.doIt();
         rpmsg.processMessages();
     }

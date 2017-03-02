@@ -26,6 +26,9 @@ typedef enum
     INFO_COLOR_RED      = 0x22,
     INFO_COLOR_WHITE    = 0x23,
 
+    INFO_CONVEYOR_STOPPED = 0x30,
+    INFO_CONVEYOR_RUNNING = 0x31,
+
     INFO_VERBOSE_ON = 0x80 + 3,
     INFO_VERBOSE_OFF = 0x80 + 4,
     INFO_MODE_NORMAL = 0x80 + 5,
