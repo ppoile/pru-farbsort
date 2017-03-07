@@ -2,7 +2,7 @@
 googletest/googletest/include
 googletest/googlemock/include
 
-$$(HOME)/projects/pru-farbsort/hw
+hw
 tests
 ctrl
 
