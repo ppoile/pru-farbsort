@@ -10,6 +10,9 @@ PRU_LIB environment variable is not set
 endef
 $(error $(ERROR_BODY))
 endif
+ifndef $(BUILD_DIR)
+BUILD_DIR=.
+endif
 
 
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
