@@ -76,7 +76,7 @@ $(GEN_DIR)/%.object: %.c
 	@echo 'Invoking: PRU Compiler'
 	$(PRU_CGT)/bin/clpru --include_path=$(PRU_CGT)/include $(INCLUDE) $(CFLAGS) -fe $@ $<
 
-.PHONY: all clean
+.PHONY: all clean install
 
 # Remove the $(GEN_DIR) directory
 clean:
@@ -90,6 +90,9 @@ clean:
 	@echo 'Finished cleaning project: $(PROJ_NAME)'
 	@echo '************************************************************'
 	@echo ''
+
+install: $(TARGET)
+	cp $(TARGET) /lib/firmware/am335x-pru0-fw
 
 # Includes the dependencies that the compiler creates (-ppd and -ppa flags)
 -include $(OBJECTS:%.object=%.pp)
