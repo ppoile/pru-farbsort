@@ -23,11 +23,15 @@ all: run-tests
 run-tests: $(EXECUTABLE)
 	$(EXECUTABLE)
 
-$(EXECUTABLE): $(OBJECTS) 
+$(EXECUTABLE): googletest/googlemock/libgmock.a $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ $(LIBPATH) $(LIB)
 
 .cpp.o:
 	$(CC) -pthread $(INCLUDES) $(CFLAGS) $< -o $@
 
+googletest/googlemock/libgmock.a:
+	cd googletest && cmake . && make
+
 clean:
 	rm -f $(OBJECTS)
+	cd googletest && git clean -d -f
