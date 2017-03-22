@@ -1,3 +1,10 @@
+ifndef PRU_LIB
+define ERROR_BODY
+PRU_LIB environment variable is not set
+endef
+$(error $(ERROR_BODY))
+endif
+
 CC=g++
 CFLAGS=-g -c -Wall -std=c++14
 LDFLAGS=
