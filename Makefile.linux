@@ -13,7 +13,7 @@ OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=tests/tests
 INCLUDES=-I googletest/googletest/include -I googletest/googlemock/include -I $(PRU_LIB)/include -I $(PRU_LIB)/include/am335x -I $(CURDIR) -I $(CURDIR)/hw -I $(CURDIR)/ctrl
 LIBPATH=-L googletest/googlemock
-LIB=-lgtest -lpthread -lgmock
+LIB=-lpthread -lgmock
 
 
 .PHONY: all run-tests clean
