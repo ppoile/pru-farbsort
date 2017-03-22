@@ -16,14 +16,18 @@ LIBPATH=-L googletest/googlemock
 LIB=-lgtest -lpthread -lgmock
 
 
-all: $(SOURCES) $(EXECUTABLE)
+.PHONY: all run-tests clean
 
-clean: 
-	rm -f $(OBJECTS)
-	echo Clean done
-    
+all: run-tests
+
+run-tests: $(EXECUTABLE)
+	$(EXECUTABLE)
+
 $(EXECUTABLE): $(OBJECTS) 
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ $(LIBPATH) $(LIB)
 
 .cpp.o:
 	$(CC) -pthread $(INCLUDES) $(CFLAGS) $< -o $@
+
+clean:
+	rm -f $(OBJECTS)
