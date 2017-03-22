@@ -12,7 +12,7 @@ SOURCES= tests/tests.cpp tests/queue_test.cpp tests/color_detect_test.cpp tests/
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=tests/tests
 INCLUDES=-I googletest/googletest/include -I googletest/googlemock/include -I $(PRU_LIB)/include -I $(PRU_LIB)/include/am335x -I $(CURDIR) -I $(CURDIR)/hw -I $(CURDIR)/ctrl
-LIBPATH=-L googletest/lib/googlemock/gtest -L googletest/lib/googlemock
+LIBPATH=-L googletest/googlemock
 LIB=-lgtest -lpthread -lgmock
 
 
