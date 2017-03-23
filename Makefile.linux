@@ -1,0 +1,37 @@
+ifndef PRU_LIB
+define ERROR_BODY
+PRU_LIB environment variable is not set
+endef
+$(error $(ERROR_BODY))
+endif
+
+CC=g++
+CFLAGS=-g -c -Wall -std=c++14
+LDFLAGS=
+SOURCES= tests/tests.cpp tests/queue_test.cpp tests/color_detect_test.cpp tests/controller_test.cpp tests/conveyor_belt_observer_test.cpp hw/gpio.cpp color_detect.cpp ctrl/controller.cpp brick_eject_command.cpp ctrl/controller_state_normal_started.cpp ctrl/controller_state_normal_stopped.cpp  ctrl/controller_state_diagnostic.cpp conveyor_belt_observer.cpp
+OBJECTS=$(SOURCES:.cpp=.o)
+EXECUTABLE=tests/tests
+INCLUDES=-I googletest/googletest/include -I googletest/googlemock/include -I $(PRU_LIB)/include -I $(PRU_LIB)/include/am335x -I $(CURDIR) -I $(CURDIR)/hw -I $(CURDIR)/ctrl
+LIBPATH=-L googletest/googlemock
+LIB=-lpthread -lgmock
+
+
+.PHONY: all run-tests clean
+
+all: run-tests
+
+run-tests: $(EXECUTABLE)
+	$(EXECUTABLE)
+
+$(EXECUTABLE): googletest/googlemock/libgmock.a $(OBJECTS)
+	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ $(LIBPATH) $(LIB)
+
+.cpp.o:
+	$(CC) -pthread $(INCLUDES) $(CFLAGS) $< -o $@
+
+googletest/googlemock/libgmock.a:
+	cd googletest && cmake . && make
+
+clean:
+	rm -f $(OBJECTS)
+	cd googletest && git clean -d -f

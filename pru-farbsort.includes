@@ -1,0 +1,11 @@
+.
+googletest/googletest/include
+googletest/googlemock/include
+
+hw
+tests
+ctrl
+
+
+$$(HOME)/prg/ti-processor-sdk-linux-am335x-evm-03.02.00.05/example-applications/pru-icss-5.1.0/include/am335x
+$$(HOME)/prg/ti-processor-sdk-linux-am335x-evm-03.02.00.05/example-applications/pru-icss-5.1.0/include
