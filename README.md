@@ -16,6 +16,8 @@ Download correct version of the tools: http://software-dl.ti.com/codegen/non-esd
 give execution permission, execute
 ...and install to ~/prg/ti-cgt-pru_x.y.z
 
+__NOTE:__ the execution of the installer for the PRU Code Generation Tools needs the 'Linux Standard Base core support package' which might not be installed if using ubuntu. Install it using sudo apt-get install lsb-core
+
 ## Linux Processor SDK
 Download correct version of the SDK: http://www.ti.com/tool/PROCESSOR-SDK-AM335X
 give execution permission, execute
@@ -59,9 +61,19 @@ patch -p1 0001-pru_virtio_ring-make-it-compile.patch
 
 Adapt ```setup-ti-env.sh``` to reference the above installed software packages.
 
+#setting up google test
+google test is linked as a submodule in order to compile the linux part of the project the submodule needs to be initialized
+
+$> git submodule init
+$> git submodule update
+
+As an additional dependency google test uses cmake
+
 # Build
+
 
 ```
 $ source setup-ti-env.sh
-$ make
+$ make -f Makefile.pru
+$ make -f Makefile.linux
 ```
