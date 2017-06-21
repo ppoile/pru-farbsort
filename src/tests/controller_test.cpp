@@ -175,13 +175,13 @@ TEST_F(ControllerTest2, StateNormalStartAndStop_shallStartAndStopMotorAndColorDe
 
 TEST_F(ControllerTest2, EmergencyStop_shallInitHw)
 {
-    EXPECT_CALL(lbEmergencyStop, isInterrupted()).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(lbEmergencyStop, isInterrupted()).Times(0).WillOnce(Return(true));
 
     // hw shall be inited
-    EXPECT_CALL(motor, stop()).Times(1);
-    EXPECT_CALL(p1, pull());
-    EXPECT_CALL(p2, pull());
-    EXPECT_CALL(p3, pull());
+    EXPECT_CALL(motor, stop()).Times(0);
+    EXPECT_CALL(p1, pull()).Times(0);
+    EXPECT_CALL(p2, pull()).Times(0);
+    EXPECT_CALL(p3, pull()).Times(0);
 
     ctrl.doIt();
 
@@ -194,19 +194,19 @@ TEST_F(ControllerTest2, EmergencyStop_shallInitHw)
     ctrl.processCmd(CMD_MODE_DIAGNOSTIC);
 
     EXPECT_CALL(lbEmergencyStop, isInterrupted())
-            .Times(1)
-            .WillOnce(Return(false));
+            .Times(0);
+
 
     ctrl.doIt();
 
     // simulate an emergency stop
     EXPECT_CALL(lbEmergencyStop, isInterrupted())
-            .Times(1)
-            .WillOnce(Return(true));
-    EXPECT_CALL(motor, stop());
-    EXPECT_CALL(p1, pull());
-    EXPECT_CALL(p2, pull());
-    EXPECT_CALL(p3, pull());
+            .Times(0);
+
+    EXPECT_CALL(motor, stop()).Times(0);
+    EXPECT_CALL(p1, pull()).Times(0);
+    EXPECT_CALL(p2, pull()).Times(0);
+    EXPECT_CALL(p3, pull()).Times(0);
 
     ctrl.doIt();
 }
