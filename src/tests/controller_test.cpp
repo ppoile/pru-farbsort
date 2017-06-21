@@ -99,7 +99,9 @@ protected:
 
 TEST(ControllerTest, Construction_shallRegisterForIncommingMessages)
 {
-    Hw hw{0,0,0,0,0,0,0,0};
+    MockMotor motor;
+    MockPiston piston0, piston1, piston2;
+    Hw hw{&motor,&piston0,&piston1,&piston2,0,0,0,0};
     MockRpMsgTx rpmsgtx;
     MockTimer timer;
     Queue<Color,COLOR_QUEUE_SIZE> queue;
@@ -207,9 +209,4 @@ TEST_F(ControllerTest2, EmergencyStop_shallInitHw)
     EXPECT_CALL(p3, pull());
 
     ctrl.doIt();
-
-
-
-
-
 }
