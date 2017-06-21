@@ -99,9 +99,7 @@ protected:
 
 TEST(ControllerTest, Construction_shallRegisterForIncommingMessages)
 {
-    MockMotor motor;
-    MockPiston piston0, piston1, piston2;
-    Hw hw{&motor,&piston0,&piston1,&piston2,0,0,0,0};
+    Hw hw{0,0,0,0,0,0,0,0};
     MockRpMsgTx rpmsgtx;
     MockTimer timer;
     Queue<Color,COLOR_QUEUE_SIZE> queue;
