@@ -1,4 +1,5 @@
 /gen/
 *.[oa]
 /tests/tests
+*.user*
 *.user
