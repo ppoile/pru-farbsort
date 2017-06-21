@@ -18,7 +18,7 @@ LIB=-lpthread -lgmock
 
 .PHONY: all build-tests run-tests clean
 
-all: run-tests
+all: build-tests
 
 run-tests: build-tests
 	$(EXECUTABLE)
