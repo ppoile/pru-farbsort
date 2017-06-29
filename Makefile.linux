@@ -16,20 +16,20 @@ LIBPATH=-L googletest/googlemock
 LIB=-lpthread -lgmock
 
 
-.PHONY: all run-tests clean
+.PHONY: all build-tests run-tests clean
 
-all: run-tests
+all: build-tests
 
-run-tests: $(EXECUTABLE)
+run-tests: build-tests
 	$(EXECUTABLE)
 
-$(EXECUTABLE): googletest/googlemock/libgmock.a $(OBJECTS)
-	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ $(LIBPATH) $(LIB)
+build-tests: build-googletest $(OBJECTS)
+	$(CC) $(LDFLAGS) $(OBJECTS) -o $(EXECUTABLE) $(LIBPATH) $(LIB)
 
 .cpp.o:
 	$(CC) -pthread $(INCLUDES) $(CFLAGS) $< -o $@
 
-googletest/googlemock/libgmock.a:
+build-googletest:
 	cd googletest && cmake . && make
 
 clean:

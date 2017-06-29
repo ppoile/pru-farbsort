@@ -1,3 +1,5 @@
+Makefile.linux
+Makefile.pru
 conveyor_belt_observer.cpp
 conveyor_belt_observer.h
 hw/adc.cpp
@@ -43,6 +45,7 @@ scheduled_output_action.cpp
 scheduled_output_action.h
 msg_definition.h
 
+setup-ti-env.sh
 tests/conveyor_belt_observer_test.cpp
 version.h
 queue.h
