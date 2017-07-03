@@ -9,3 +9,26 @@ ctrl
 
 $$(HOME)/prg/ti-processor-sdk-linux-am335x-evm-03.02.00.05/example-applications/pru-icss-5.1.0/include/am335x
 $$(HOME)/prg/ti-processor-sdk-linux-am335x-evm-03.02.00.05/example-applications/pru-icss-5.1.0/include
+googletest/CMakeFiles
+src/tests
+googletest/googletest/samples
+googletest/googlemock/test
+include/ctrl
+googletest/googletest/include/gtest/internal/custom
+src/ctrl
+googletest/googlemock/include/gmock/internal/custom
+googletest/googletest/src
+googletest/googletest/codegear
+googletest/googletest/xcode/Samples/FrameworkSample
+googletest/CMakeFiles/3.7.2/CompilerIdCXX
+googletest/googletest/test
+googletest/googletest/include/gtest
+include
+src/hw
+googletest/CMakeFiles/3.7.2/CompilerIdC
+googletest/googlemock/src
+googletest/googlemock/include/gmock/internal
+include/hw
+googletest/googletest/include/gtest/internal
+googletest/googlemock/include/gmock
+src

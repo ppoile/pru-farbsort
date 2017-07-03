@@ -71,6 +71,7 @@ As an additional dependency google test uses cmake
 
 # Build
 
+All build-artefacts are put into the `bin/` folder.
 
 ```
 $ source setup-ti-env.sh

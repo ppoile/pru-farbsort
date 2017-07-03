@@ -1,5 +1,6 @@
 /gen/
 *.[oa]
-/tests/tests
 *.user*
 *.user
+obj/
+bin/

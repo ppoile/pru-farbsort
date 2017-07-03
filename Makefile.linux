@@ -5,28 +5,43 @@ endef
 $(error $(ERROR_BODY))
 endif
 
+SRC_DIR=src
+INC_DIR=include
+OBJ_DIR=obj
+BIN_DIR=bin
+
 CC=g++
 CFLAGS=-g -c -Wall -std=c++14
 LDFLAGS=
-SOURCES= tests/tests.cpp tests/queue_test.cpp tests/color_detect_test.cpp tests/controller_test.cpp tests/conveyor_belt_observer_test.cpp hw/gpio.cpp color_detect.cpp ctrl/controller.cpp brick_eject_command.cpp ctrl/controller_state_normal_started.cpp ctrl/controller_state_normal_stopped.cpp  ctrl/controller_state_diagnostic.cpp conveyor_belt_observer.cpp
-OBJECTS=$(SOURCES:.cpp=.o)
-EXECUTABLE=tests/tests
-INCLUDES=-I googletest/googletest/include -I googletest/googlemock/include -I $(PRU_LIB)/include -I $(PRU_LIB)/include/am335x -I $(CURDIR) -I $(CURDIR)/hw -I $(CURDIR)/ctrl
+SOURCES= $(SRC_DIR)/tests/tests.cpp $(SRC_DIR)/tests/queue_test.cpp $(SRC_DIR)/tests/color_detect_test.cpp $(SRC_DIR)/tests/controller_test.cpp $(SRC_DIR)/tests/conveyor_belt_observer_test.cpp $(SRC_DIR)/hw/gpio.cpp $(SRC_DIR)/color_detect.cpp $(SRC_DIR)/ctrl/controller.cpp $(SRC_DIR)/brick_eject_command.cpp $(SRC_DIR)/ctrl/controller_state_normal_started.cpp $(SRC_DIR)/ctrl/controller_state_normal_stopped.cpp  $(SRC_DIR)/ctrl/controller_state_diagnostic.cpp $(SRC_DIR)/conveyor_belt_observer.cpp
+
+OBJECTS:= $(addprefix $(OBJ_DIR)/, $(SOURCES:%.cpp=%.o))
+EXECUTABLE=$(BIN_DIR)/tests
+INCLUDES=-I googletest/googletest/include -I googletest/googlemock/include -I $(PRU_LIB)/include -I $(PRU_LIB)/include/am335x -I $(INC_DIR) -I $(INC_DIR)/hw -I $(INC_DIR)/ctrl
 LIBPATH=-L googletest/googlemock
 LIB=-lpthread -lgmock
+
+$(info $$INCLUDES is [${INCLUDES}])
 
 
 .PHONY: all build-tests run-tests clean
 
 all: build-tests
 
-run-tests: build-tests
+directories: ${OBJ_DIR}
+	@mkdir -p ${OBJ_DIR}
+	@mkdir -p ${BIN_DIR}
+
+
+run-tests: directories build-tests
 	$(EXECUTABLE)
 
 build-tests: build-googletest $(OBJECTS)
+
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $(EXECUTABLE) $(LIBPATH) $(LIB)
 
-.cpp.o:
+$(OBJ_DIR)/%.o: %.cpp
+	@mkdir -p $(@D)
 	$(CC) -pthread $(INCLUDES) $(CFLAGS) $< -o $@
 
 build-googletest:
