@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "common.h"
@@ -99,7 +100,12 @@ protected:
 
 TEST(ControllerTest, Construction_shallRegisterForIncommingMessages)
 {
-    Hw hw{0,0,0,0,0,0,0,0};
+    MockMotor motor;
+    MockPiston p1;
+    MockPiston p2;
+    MockPiston p3;
+
+	Hw hw{&motor, &p1, &p2, &p3, 0, 0, 0, 0};
     MockRpMsgTx rpmsgtx;
     MockTimer timer;
     Queue<Color,COLOR_QUEUE_SIZE> queue;
