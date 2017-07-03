@@ -26,14 +26,14 @@ $(info $$INCLUDES is [${INCLUDES}])
 
 .PHONY: all build-tests run-tests clean
 
-all: directories build-tests
+all: build-tests
 
 directories: ${OBJ_DIR}
 	@mkdir -p ${OBJ_DIR}
 	@mkdir -p ${BIN_DIR}
 
 
-run-tests: build-tests
+run-tests: directories build-tests
 	$(EXECUTABLE)
 
 build-tests: build-googletest $(OBJECTS)
