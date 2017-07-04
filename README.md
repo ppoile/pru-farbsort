@@ -71,10 +71,24 @@ As an additional dependency google test uses cmake
 
 # Build
 
-All build-artefacts are put into the `bin/` folder.
+All build-artefacts are put into the `bin/` folder. The linux executable will contain the unit tests, the .pru executable will be the compiled firmware
 
 ```
 $ source setup-ti-env.sh
 $ make -f Makefile.pru
 $ make -f Makefile.linux
 ```
+
+## Installing manually on the beagle board
+The following instructions should only be used to test development versions of the code on the target board, this is a shortcut to avoid rebuilding a full image every time the code changes. The steps below assume that the beagle-board is correctly set up with an appropriate SD card image built out of https://github.com/bbvch/farbsort. 
+
+The resulting binary of running ```make -f Makefile.pru``` needs to be copied to the beagle as ```/lib/firmware/am335x-pru0-fw``` __Note:__ the exact filename including proper capitalisation is needed, or else the board will not run properly.
+
+1. Connect the beagle board over USB and wait for it to boot and start the network stack. The blue user-LED D20 will flash a "heartbeat" pattern when ready
+1. create a backup of the existing firmware by using
+  1. log in on the beagle board ```$>ssh debian@192.168.7.2``` the password will be shown on the login prompt. The ip adress is the default one assumed by the beagle board when using network over USB and might change depending on the flashed image.
+  1. create a backup by ```$>mkdir ~/<current_date>_firmware_backup && sudo cp /lib/firmware/amx335x-pru0 ~/<current_date>_firmware_backup/```
+1. copy the new version of the firmware onto the beagle board ```scp bin/am335x-pru0-fw debian@192.168.7.2:~/```
+1. log in again on the beagle board using ssh and copy the file to /lib/firmware ```sudo cp am335x-pru0-fw /lib/firmware/```
+1. restart the beagle board by unplugging the usb cable (using ```reboot``` might not correctly reload the firmware code)
+
