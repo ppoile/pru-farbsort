@@ -71,13 +71,32 @@ As an additional dependency google test uses cmake
 
 # Build
 
-All build-artefacts are put into the `bin/` folder. The linux executable will contain the unit tests, the .pru executable will be the compiled firmware
+All build-artefacts are put into the `bin/` folder. The linux executable will contain the unit tests, the .pru executable will be the compiled firmware. Before a build can be started the PRU-toolchain has to be set by sourcing  ```setup-ti-env.sh```
+
+## Building all
+
+Building linux and pru binaries all in one go.
 
 ```
 $ source setup-ti-env.sh
-$ make -f Makefile.pru
-$ make -f Makefile.linux
+$ make 
+
+## Building in single steps 
+If only the linux code (tests) or the pru code needs to be built specify the target
+
 ```
+$ source setup-ti-env.sh
+$ make linux
+$ make pru
+```
+
+### Building single targets
+individual targets or substeps of the build can be triggered using the makefiles directly
+
+``` 
+$ source setup-ti-env.sh
+$ make -f Makefile.linux <target>
+$ make -f Makefile.pru <target>
 
 ## Installing manually on the beagle board
 The following instructions should only be used to test development versions of the code on the target board, this is a shortcut to avoid rebuilding a full image every time the code changes. The steps below assume that the beagle-board is correctly set up with an appropriate SD card image built out of https://github.com/bbvch/farbsort. 
