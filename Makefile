@@ -18,7 +18,7 @@ linux-clean:
 	$(MAKE) -f $(MAKEFILE_LINUX) clean
 
 pru-clean:
-	$(MAKE) -f $(MAKEFILE_LINUX) clean
+	$(MAKE) -f $(MAKEFILE_PRU) clean
 
 linux-run-tests: linux
 	$(MAKE) -f $(MAKEFILE_LINUX) run-tests
