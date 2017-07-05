@@ -82,7 +82,9 @@ clean:
 	@echo 'Cleaning project: $(PROJ_NAME)'
 	@echo ''
 	@echo 'Removing files in the "$(OBJ_DIR)" directory'
-	@rm -rf $(OBJ_DIR)
+	@rm -f $(OBJECTS)
+	@rm -f $(OBJ_DIR)/*.pp
+	@rm -f $(MAP)
 	@echo ''
 	@echo 'Finished cleaning project: $(PROJ_NAME)'
 	@echo '************************************************************'
