@@ -98,6 +98,12 @@ $ source setup-ti-env.sh
 $ make -f Makefile.linux <target>
 $ make -f Makefile.pru <target>
 
+### running tets suite
+```
+$ make -f Makefile.linux run-tests
+```
+
+
 ## Installing manually on the beagle board
 The following instructions should only be used to test development versions of the code on the target board, this is a shortcut to avoid rebuilding a full image every time the code changes. The steps below assume that the beagle-board is correctly set up with an appropriate SD card image built out of https://github.com/bbvch/farbsort. 
 
