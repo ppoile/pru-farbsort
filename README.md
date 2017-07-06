@@ -1,6 +1,6 @@
 # Setup
 
-A good introduction what to optain can be found on http://processors.wiki.ti.com/index.php/PRU-ICSS_Getting_Started_Guide
+A good introduction what to obtain can be found on http://processors.wiki.ti.com/index.php/PRU-ICSS_Getting_Started_Guide. 
 
 __NOTE:__ Make sure that the PRU Code Generation Tools and the Linux Processor SDK (and its included software support package) are compatible with the kernel and its drivers.
 
@@ -8,7 +8,7 @@ A valid combination that works:
 * [Debian 8.6](https://debian.beagleboard.org/images/bone-debian-8.6-lxqt-4gb-armhf-2016-11-06-4gb.img.xz)
 * [CGT 2.1.4](http://software-dl.ti.com/codegen/esd/cgt_public_sw/PRU/2.1.4/ti_cgt_pru_2.1.4_linux_installer_x86.bin)
 * [SDK 3.0.2](http://software-dl.ti.com/processor-sdk-linux/esd/AM335X/latest/index_FDS.html)
- 
+
 
 ## PRU Code Generation Tools
 
@@ -80,6 +80,7 @@ Building linux and pru binaries all in one go.
 ```
 $ source setup-ti-env.sh
 $ make 
+```
 
 ## Building in single steps 
 If only the linux code (tests) or the pru code needs to be built specify the target
@@ -97,6 +98,7 @@ individual targets or substeps of the build can be triggered using the makefiles
 $ source setup-ti-env.sh
 $ make -f Makefile.linux <target>
 $ make -f Makefile.pru <target>
+```
 
 ## Installing manually on the beagle board
 The following instructions should only be used to test development versions of the code on the target board, this is a shortcut to avoid rebuilding a full image every time the code changes. The steps below assume that the beagle-board is correctly set up with an appropriate SD card image built out of https://github.com/bbvch/farbsort. 
