@@ -1,6 +1,7 @@
 # Intro
 
 This repository contains the code for the PRU (Programmable Realtime Unit) for the [farbsort](https://github.com/bbvch/farbsort) project. Please head there for a more general and highlevel overview over the project. 
+![Hardware schematic](doc/images/FischertechnikHW_schematic.jpg  "Hardware Schematic")
 
 # Setup
 
