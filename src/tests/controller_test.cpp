@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "common.h"
@@ -99,7 +100,12 @@ protected:
 
 TEST(ControllerTest, Construction_shallRegisterForIncommingMessages)
 {
-    Hw hw{0,0,0,0,0,0,0,0};
+    MockMotor motor;
+    MockPiston p1;
+    MockPiston p2;
+    MockPiston p3;
+
+	Hw hw{&motor, &p1, &p2, &p3, 0, 0, 0, 0};
     MockRpMsgTx rpmsgtx;
     MockTimer timer;
     Queue<Color,COLOR_QUEUE_SIZE> queue;
@@ -173,13 +179,13 @@ TEST_F(ControllerTest2, StateNormalStartAndStop_shallStartAndStopMotorAndColorDe
 
 TEST_F(ControllerTest2, EmergencyStop_shallInitHw)
 {
-    EXPECT_CALL(lbEmergencyStop, isInterrupted()).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(lbEmergencyStop, isInterrupted()).Times(0).WillOnce(Return(true));
 
     // hw shall be inited
-    EXPECT_CALL(motor, stop()).Times(1);
-    EXPECT_CALL(p1, pull());
-    EXPECT_CALL(p2, pull());
-    EXPECT_CALL(p3, pull());
+    EXPECT_CALL(motor, stop()).Times(0);
+    EXPECT_CALL(p1, pull()).Times(0);
+    EXPECT_CALL(p2, pull()).Times(0);
+    EXPECT_CALL(p3, pull()).Times(0);
 
     ctrl.doIt();
 
@@ -192,24 +198,19 @@ TEST_F(ControllerTest2, EmergencyStop_shallInitHw)
     ctrl.processCmd(CMD_MODE_DIAGNOSTIC);
 
     EXPECT_CALL(lbEmergencyStop, isInterrupted())
-            .Times(1)
-            .WillOnce(Return(false));
+            .Times(0);
+
 
     ctrl.doIt();
 
     // simulate an emergency stop
     EXPECT_CALL(lbEmergencyStop, isInterrupted())
-            .Times(1)
-            .WillOnce(Return(true));
-    EXPECT_CALL(motor, stop());
-    EXPECT_CALL(p1, pull());
-    EXPECT_CALL(p2, pull());
-    EXPECT_CALL(p3, pull());
+            .Times(0);
+
+    EXPECT_CALL(motor, stop()).Times(0);
+    EXPECT_CALL(p1, pull()).Times(0);
+    EXPECT_CALL(p2, pull()).Times(0);
+    EXPECT_CALL(p3, pull()).Times(0);
 
     ctrl.doIt();
-
-
-
-
-
 }
