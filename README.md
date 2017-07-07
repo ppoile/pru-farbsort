@@ -1,3 +1,7 @@
+# Intro
+
+This repository contains the code for the PRU (Programmable Realtime Unit) for the [farbsort](https://github.com/bbvch/farbsort) project. Please head there for a more general and highlevel overview over the project. 
+
 # Setup
 
 A good introduction what to obtain can be found on http://processors.wiki.ti.com/index.php/PRU-ICSS_Getting_Started_Guide. 
@@ -23,45 +27,12 @@ Download correct version of the SDK: http://www.ti.com/tool/PROCESSOR-SDK-AM335X
 give execution permission, execute
 ...and install to ~/prg/ti-processor-sdk-linux-am335x-evm-xx.xx.xx.xx
 
-Patch pru-icss-a.b.c:
-```
-cd ~/prg/ti-processor-sdk-linux-am335x-evm-xx.xx.xx.xx/example-applications/pru-icss-a.b.c
-cat > 0001-pru_virtio_ring-make-it-compile.patch << 'EOF'
-From 610ba2f327bbbc0c778349199cc0cda6079d235c Mon Sep 17 00:00:00 2001
-From: Andreas Meier <andreas.meier@bbv.ch>
-Date: Mon, 14 Nov 2016 10:20:26 +0100
-Subject: [PATCH] pru_virtio_ring: make it compile
+SInce there is a broken compilation in the TI SDK, apply [this patch](0001-pru_virtio_ring-make-it-compile.patch) to the TI SDK
 
----
- include/pru_virtio_ring.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/include/pru_virtio_ring.h b/include/pru_virtio_ring.h
-index 6cbb32f..219f82c 100755
---- a/include/pru_virtio_ring.h
-+++ b/include/pru_virtio_ring.h
-@@ -131,9 +131,9 @@ static inline void vring_init(struct vring *vr, uint32_t num, void *p,
-                              uint64_t align)
- {
-        vr->num = num;
--       vr->desc = p;
--       vr->avail = (void *)((char *)p + num*sizeof(struct vring_desc));
--       vr->used = (void *)(uintptr_t)(((uint64_t)&vr->avail->ring[num]
-+       vr->desc = (vring_desc *)p;
-+       vr->avail = (vring_avail *)((char *)p + num*sizeof(struct vring_desc));
-+       vr->used = (vring_used *)(uintptr_t)(((uint64_t)&vr->avail->ring[num]
-                + sizeof(uint16_t) + align-1) & ~(align - 1));
- }
-
---
-2.7.4
-EOF
-patch -p1 0001-pru_virtio_ring-make-it-compile.patch
-```
 
 Adapt ```setup-ti-env.sh``` to reference the above installed software packages.
 
-#setting up google test
+## setting up google test
 google test is linked as a submodule in order to compile the linux part of the project the submodule needs to be initialized
 
 $> git submodule init
@@ -69,7 +40,7 @@ $> git submodule update
 
 As an additional dependency google test uses cmake
 
-# Build
+# Building
 
 All build-artefacts are put into the `bin/` folder. The linux executable will contain the unit tests, the .pru executable will be the compiled firmware. Before a build can be started the PRU-toolchain has to be set by sourcing  ```setup-ti-env.sh```
 
