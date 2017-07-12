@@ -3,9 +3,13 @@
 This repository contains the code for the PRU (Programmable Realtime Unit) for the [farbsort](https://github.com/bbvch/farbsort) project. Please head there for a more general and highlevel overview over the project. 
 ![Hardware schematic](doc/images/FischertechnikHW_schematic.jpg  "Hardware Schematic")
 
+A detailed schematic on the pin usage on the beagleboard can be found in this PDF: [doc/Diagrams/farbsort-pcb-schematic.pdf](doc/Diagrams/farbsort-pcb-schematic.pdf) 
+
+The layout of the cape for the BeagleBoard can be found in this PDF [doc/Diagrams/farbsort-pcb-layout.pdf](doc/Diagrams/farbsort-pcb-layout.pdf) 
+
 # Setup
 
-A good introduction what to obtain can be found on http://processors.wiki.ti.com/index.php/PRU-ICSS_Getting_Started_Guide. 
+A good introduction what software packages to obtain for developing can be found on http://processors.wiki.ti.com/index.php/PRU-ICSS_Getting_Started_Guide. 
 
 __NOTE:__ Make sure that the PRU Code Generation Tools and the Linux Processor SDK (and its included software support package) are compatible with the kernel and its drivers.
 
