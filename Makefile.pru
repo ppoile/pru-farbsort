@@ -1,15 +1,15 @@
-ifndef PRU_CGT
-define ERROR_BODY
-PRU_CGT environment variable is not set
-endef
-$(error $(ERROR_BODY))
-endif
-ifndef PRU_LIB
-define ERROR_BODY
-PRU_LIB environment variable is not set
-endef
-$(error $(ERROR_BODY))
-endif
+#ifndef PRU_CGT
+#define ERROR_BODY
+#PRU_CGT environment variable is not set
+#endef
+#$(error $(ERROR_BODY))
+#endif
+#ifndef PRU_LIB
+#define ERROR_BODY
+#PRU_LIB environment variable is not set
+#endef
+#$(error $(ERROR_BODY))
+#endif
 ifndef $(BUILD_DIR)
 BUILD_DIR=.
 endif
@@ -23,8 +23,21 @@ MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 CURRENT_DIR := $(notdir $(patsubst %/,%,$(dir $(MKFILE_PATH))))
 PROJ_NAME=$(CURRENT_DIR)
 LINKER_COMMAND_FILE=./AM335x_PRU.cmd
+
+ifdef PRU_ICSS_LIB_PATH
+LIBS=--library=$(PRU_ICSS_LIB_PATH)/rpmsg_lib.lib
+else
 LIBS=--library=$(PRU_LIB)/lib/rpmsg_lib.lib
+endif
+
+
+ifdef PRU_ICSS_INC_PATH
+INCLUDE=--include_path=$(PRU_ICSS_INC_PATH) --include_path=$(PRU_ICSS_INC_PATH)/am335x --include_path=$(INC_DIR)/hw --include_path=$(INC_DIR)/ctrl --include_path=$(INC_DIR)
+else
 INCLUDE=--include_path=$(PRU_LIB)/include --include_path=$(PRU_LIB)/include/am335x --include_path=$(INC_DIR)/hw --include_path=$(INC_DIR)/ctrl --include_path=$(INC_DIR)
+endif
+
+
 STACK_SIZE=0x100
 HEAP_SIZE=0x100
 

@@ -1,9 +1,9 @@
-ifndef PRU_LIB
-define ERROR_BODY
-PRU_LIB environment variable is not set
-endef
-$(error $(ERROR_BODY))
-endif
+#ifndef PRU_LIB
+#define ERROR_BODY
+#PRU_LIB environment variable is not set
+#endef
+#$(error $(ERROR_BODY))
+#endif
 
 SRC_DIR=src
 INC_DIR=include
