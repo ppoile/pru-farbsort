@@ -12,6 +12,7 @@
 #endif
 ifndef $(BUILD_DIR)
 BUILD_DIR=.
+$(shell mkdir ./bin)
 endif
 
 SRC_DIR=src
