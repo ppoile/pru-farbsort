@@ -10,6 +10,9 @@
 #endef
 #$(error $(ERROR_BODY))
 #endif
+ifndef CLPRU
+CLPRU=$(PRU_CGT)/bin/clpru
+endif
 ifndef $(BUILD_DIR)
 BUILD_DIR=.
 $(shell mkdir ./bin)
@@ -73,7 +76,7 @@ $(TARGET): $(OBJECTS) $(LINKER_COMMAND_FILE)
 	@echo ''
 	@echo 'Building target: $@'
 	@echo 'Invoking: PRU Linker'
-	$(PRU_CGT)/bin/clpru $(CFLAGS) -z -i$(PRU_CGT)/lib -i$(PRU_CGT)/include $(LFLAGS) -o $(TARGET) $(OBJECTS) -m$(MAP) $(LINKER_COMMAND_FILE) --library=libc.a $(LIBS)
+	$(CLPRU) $(CFLAGS) -z -i$(PRU_CGT)/lib -i$(PRU_CGT)/include $(LFLAGS) -o $(TARGET) $(OBJECTS) -m$(MAP) $(LINKER_COMMAND_FILE) --library=libc.a $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ''
 	@echo 'Output files can be found in the "$(BIN_DIR)" directory'
@@ -84,7 +87,7 @@ $(OBJ_DIR)/%.object: %.cpp
 	@echo ''
 	@echo 'Building file: $<'
 	@echo 'Invoking: PRU Compiler'
-	$(PRU_CGT)/bin/clpru --include_path=$(PRU_CGT)/include $(INCLUDE) $(CFLAGS) --c++03 -fe $@ $<
+	$(CLPRU) --include_path=$(PRU_CGT)/include $(INCLUDE) $(CFLAGS) --c++03 -fe $@ $<
 
 
 .PHONY: all clean install
