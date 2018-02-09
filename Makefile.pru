@@ -15,7 +15,7 @@ CLPRU=$(PRU_CGT)/bin/clpru
 endif
 ifndef $(BUILD_DIR)
 BUILD_DIR=.
-$(shell mkdir ./bin)
+$(shell mkdir -p ./bin)
 endif
 
 SRC_DIR=src
