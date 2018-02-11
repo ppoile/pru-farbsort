@@ -61,6 +61,8 @@ typedef enum
 
 
 
-    INFO_COLOR_DETECT = 0x80 + 0x40
+    INFO_COLOR_DETECT = 0x80 + 0x40,
+
+    INFO_TICK = 0xF0,
 
 } Commands;

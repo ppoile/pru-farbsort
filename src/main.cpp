@@ -62,6 +62,7 @@ extern "C" {
 #include "rpmsg.h"
 #include "rpmsg_rx_interface.h"
 #include "rpmsg_tx_interface.h"
+#include "periodic_rpmsg_tick_sender.h"
 #include "command_interface.h"
 #include "conveyor_belt_observer.h"
 #include "pulse_counter.h"
@@ -114,7 +115,9 @@ ControllerStateNormalStopped state_stopped(hw, &timer, &rpmsg);
 Controller ctrl(hw, &rpmsg, stateDiagnostic, state_stopped, state_started);
 
 
-void main() {
+void main()
+{
+    PeriodicRpmsgTickSender tickSender(timer, rpmsg);
 
 #ifdef ADC_LOGGING
     for(int i = 0; i < 200; i++)
@@ -130,6 +133,7 @@ void main() {
     timer.start();
 
     // calling the execute() will start the infinite calling of theses commands
+    tickSender.execute();
     colorDetect.execute();
     conveyorBeltObserver.execute();
 
