@@ -33,6 +33,7 @@ public:
     MOCK_METHOD2(post_msg, int16_t (char const *event, uint16_t length));
     MOCK_METHOD1(post_info, int16_t (char info));
     MOCK_METHOD1(registerReceiver, void(RpMsgRxInterface* messageHandler));
+    MOCK_METHOD0(setDisconnected, void());
 };
 
 class ColorDetectTest : public ::testing::Test{

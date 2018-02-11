@@ -14,6 +14,7 @@ public:
     int16_t post_info(char info);
     void registerReceiver(RpMsgRxInterface* messageHandler);
     void processMessages();
+    void setDisconnected();
 
 private:
     RpMsgRxInterface* messageHandler;

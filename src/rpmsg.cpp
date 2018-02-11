@@ -102,3 +102,8 @@ void RpMsgTrx::registerReceiver(RpMsgRxInterface* messageHandler)
 {
     this->messageHandler = messageHandler;
 }
+
+void RpMsgTrx::setDisconnected()
+{
+  rpmsg_connected = false;
+}

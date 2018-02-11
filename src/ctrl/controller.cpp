@@ -44,6 +44,7 @@ void Controller::processCmd(uint8_t cmd)
             break;
 
         case CMD_RESET:
+            rpmsg->setDisconnected();
             setState(&state_normal_started);
             break;
 
