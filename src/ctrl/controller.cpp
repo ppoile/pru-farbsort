@@ -6,7 +6,6 @@
 #include "piston.h"
 #include "light_barrier.h"
 #include "hw.h"
-#include "pru_rpmsg.h"
 #include "rpmsg_tx_interface.h"
 
 #ifdef ADC_LOGGING
