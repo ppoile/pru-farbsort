@@ -24,7 +24,7 @@ LIB=-lpthread -lgmock
 $(info $$INCLUDES is [${INCLUDES}])
 
 
-.PHONY: all build-tests run-tests clean
+.PHONY: all directories run-tests build-tests clean
 
 all: build-tests
 
@@ -32,12 +32,10 @@ directories: ${OBJ_DIR}
 	@mkdir -p ${OBJ_DIR}
 	@mkdir -p ${BIN_DIR}
 
-
-run-tests: directories build-tests
+run-tests: build-tests
 	$(EXECUTABLE)
 
-build-tests: build-googletest $(OBJECTS)
-
+build-tests: build-googletest directories $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $(EXECUTABLE) $(LIBPATH) $(LIB)
 
 $(OBJ_DIR)/%.o: %.cpp
