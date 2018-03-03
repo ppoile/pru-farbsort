@@ -1,0 +1,19 @@
+language: cpp
+
+script:
+  - make linux-run-tests
+
+matrix:
+  include:
+    os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-7
+    env:
+      - COMPILER_EVAL="CC=gcc-7 && CXX=g++-7"
+
+before_script:
+  - eval "${COMPILER_EVAL}"
