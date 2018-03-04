@@ -28,14 +28,14 @@ $(info $$INCLUDES is [${INCLUDES}])
 
 all: build-tests
 
-directories: ${OBJ_DIR}
+directories:
 	@mkdir -p ${OBJ_DIR}
 	@mkdir -p ${BIN_DIR}
 
 run-tests: build-tests
 	$(EXECUTABLE)
 
-build-tests: build-googletest directories $(OBJECTS)
+build-tests: directories build-googletest $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $(EXECUTABLE) $(LIBPATH) $(LIB)
 
 $(OBJ_DIR)/%.o: %.cpp
