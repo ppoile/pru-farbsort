@@ -18,7 +18,7 @@ OBJECTS:= $(addprefix $(OBJ_DIR)/, $(SOURCES:%.cpp=%.o))
 EXECUTABLE=$(BIN_DIR)/tests
 INCLUDES=-I googletest/googletest/include -I googletest/googlemock/include -I $(PRU_LIB)/include -I $(PRU_LIB)/include/am335x -I $(INC_DIR) -I $(INC_DIR)/hw -I $(INC_DIR)/ctrl
 LIBPATH=-L googletest/googlemock
-LIB=-lpthread -lgmock
+LIB=-lstdc++ -lpthread -lgmock
 
 $(info $$INCLUDES is [${INCLUDES}])
 
