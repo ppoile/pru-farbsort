@@ -10,7 +10,6 @@ INC_DIR=include
 OBJ_DIR=obj
 BIN_DIR=bin
 
-CC=g++
 CFLAGS=-g -c -Wall -std=c++14
 LDFLAGS=
 SOURCES= $(SRC_DIR)/tests/tests.cpp $(SRC_DIR)/tests/queue_test.cpp $(SRC_DIR)/tests/color_detect_test.cpp $(SRC_DIR)/tests/controller_test.cpp $(SRC_DIR)/tests/conveyor_belt_observer_test.cpp $(SRC_DIR)/hw/gpio.cpp $(SRC_DIR)/color_detect.cpp $(SRC_DIR)/ctrl/controller.cpp $(SRC_DIR)/brick_eject_command.cpp $(SRC_DIR)/ctrl/controller_state_normal_started.cpp $(SRC_DIR)/ctrl/controller_state_normal_stopped.cpp  $(SRC_DIR)/ctrl/controller_state_diagnostic.cpp $(SRC_DIR)/conveyor_belt_observer.cpp
